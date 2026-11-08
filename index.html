@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Motion Studio</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/webm-muxer@5/build/webm-muxer.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mp4-muxer@5/build/mp4-muxer.js"></script>
+<style>
+body{background:#0d0f12;color:#e2e8f0;font-family:system-ui,-apple-system,sans-serif}
+.opt{background:#181c24;color:#9ca3af;border:1px solid #1f2937;border-radius:.5rem;padding:.4rem .25rem;transition:.15s}
+.opt:hover{color:#fff;border-color:#4b5563}
+.opt.on{background:#4f46e5;color:#fff;font-weight:700;border-color:#4f46e5}
+.opt.amber.on{background:#1d2330;color:#fbbf24;border-color:#f59e0b}
+.preset{background:#12151a;border:1px solid #374151;border-radius:.5rem;padding:.5rem;text-align:left}
+.preset.on{background:#1d2330;border-color:#f59e0b}
+.preset.on .pt{color:#fbbf24}
+.toptab{padding:.375rem .75rem;font-size:.75rem;font-weight:600;border-radius:.5rem;color:#9ca3af}
+.toptab:hover{color:#fff}
+.toptab.on{background:#f59e0b;color:#000}
+.rtab{flex:1;padding:.75rem 0;text-align:center;border-bottom:2px solid transparent;color:#9ca3af}
+.rtab:hover{color:#fff}
+.rtab.on{border-color:#6366f1;color:#fff;background:#181c24}
+.checker{background-color:#050608;background-image:radial-gradient(#11141c 1px,transparent 1px);background-size:16px 16px}
+.menu{position:absolute;z-index:40;background:#181c24;border:1px solid #374151;border-radius:.75rem;padding:.25rem;min-width:170px;box-shadow:0 10px 30px #000a}
+.menu button{display:block;width:100%;text-align:left;padding:.4rem .6rem;font-size:.75rem;border-radius:.5rem;color:#d1d5db}
+.menu button:hover{background:#252e40;color:#fff}
+.ipt{background:#0d0f12;border:1px solid #374151;border-radius:.5rem;padding:.4rem .6rem;width:100%;color:#e2e8f0;font-size:.75rem}
+.ipt:focus{outline:none;border-color:#f59e0b}
+button:disabled{opacity:.5;cursor:not-allowed}
+</style>
+</head>
+<body class="flex flex-col h-screen overflow-hidden">
+
+<!-- NAVBAR -->
+<header class="flex items-center justify-between px-4 py-2.5 bg-[#12151a] border-b border-gray-800 relative z-30">
+  <div class="flex items-center space-x-3">
+    <div class="bg-gradient-to-r from-amber-500 to-orange-600 p-2 rounded-lg text-black font-bold flex items-center justify-center"><i class="fa-solid fa-video text-sm"></i></div>
+    <div>
+      <span class="font-extrabold tracking-wider text-white">MOTION <span class="text-amber-500">STUDIO</span></span>
+      <span class="block text-[9px] text-gray-400 tracking-widest">TURBO GPU ENGINE</span>
+    </div>
+  </div>
+  <div class="flex items-center space-x-2 bg-[#181c24] p-1 rounded-xl border border-gray-800">
+    <button class="toptab on" data-top="canvas">CANVAS</button>
+    <button class="toptab" data-top="svg">SVG MOTION <i class="fa-solid fa-lock-open text-[10px] ml-1 text-emerald-400"></i></button>
+    <button class="toptab" data-top="code"><i class="fa-solid fa-code mr-1"></i> KODE JS</button>
+    <button class="toptab" data-top="layer">VISUAL LAYER</button>
+  </div>
+  <div class="flex items-center space-x-2">
+    <button id="btnTerm" class="px-3 py-1.5 text-xs font-medium bg-[#1d2330] hover:bg-[#252e40] text-blue-400 border border-blue-900/50 rounded-lg"><i class="fa-solid fa-terminal mr-1"></i> TERMINAL EDITOR</button>
+    <button id="btnPrompt" class="px-3 py-1.5 text-xs font-semibold bg-gradient-to-r from-amber-500 to-orange-500 text-black rounded-lg"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i> PROMPT AI</button>
+    <div class="relative">
+      <button id="btnGen" class="px-3 py-1.5 text-xs font-medium bg-[#1d2330] hover:bg-[#252e40] text-gray-300 border border-gray-700 rounded-lg">AI GENERATORS <i class="fa-solid fa-chevron-down text-[10px] ml-1"></i></button>
+      <div id="menuGen" class="menu hidden right-0 top-9"></div>
+    </div>
+    <button id="btnBulk" class="px-3 py-1.5 text-xs font-medium bg-[#1d2330] hover:bg-[#252e40] text-gray-300 border border-gray-700 rounded-lg"><i class="fa-solid fa-file-zipper mr-1"></i> BULK ZIP <i class="fa-solid fa-lock-open text-[10px] ml-1 text-emerald-400"></i></button>
+    <button id="btnLic" class="px-4 py-1.5 text-xs font-bold bg-amber-500 hover:bg-amber-400 text-black rounded-lg ml-2"><i class="fa-solid fa-crown mr-1"></i> BELI LISENSI</button>
+  </div>
+</header>
+
+<div class="flex flex-1 overflow-hidden">
+  <!-- KIRI -->
+  <div class="flex-1 flex flex-col p-4 bg-[#0a0c0f] border-r border-gray-800 min-w-0">
+    <div class="flex justify-between items-center mb-3">
+      <div class="flex items-center space-x-2">
+        <span class="text-xs font-bold tracking-wide text-cyan-400">LIVE VIEWPORT MONITOR</span>
+        <span id="infoLbl" class="text-[10px] text-gray-500">1920x1080 • 30 FPS</span>
+      </div>
+      <div class="flex items-center space-x-2">
+        <div class="relative">
+          <button id="btnAlpha" class="px-2 py-1 bg-cyan-950 text-cyan-400 border border-cyan-800 text-[10px] font-bold rounded flex items-center"><i class="fa-solid fa-circle text-[6px] mr-1"></i><span id="alphaLbl">ALPHA</span><i class="fa-solid fa-chevron-down text-[8px] ml-1"></i></button>
+          <div id="menuAlpha" class="menu hidden right-0 top-7">
+            <button data-bg="alpha">Alpha Transparan</button>
+            <button data-bg="black">Hitam</button>
+            <button data-bg="white">Putih</button>
+            <button data-bg="green">Hijau (Chroma Key)</button>
+          </div>
+        </div>
+        <button id="btnGuide" class="px-2 py-1 bg-[#161b22] hover:bg-[#1d2430] text-teal-400 border border-teal-900 text-[10px] font-bold rounded">PANDUAN MOV ALPHA</button>
+        <button id="btnGrid" class="px-2 py-1 bg-[#161b22] text-gray-300 border border-gray-700 text-[10px] rounded"><i class="fa-solid fa-table-cells mr-1"></i> GRID</button>
+        <button id="btnOpt" class="px-2 py-1 bg-emerald-950 text-emerald-400 border border-emerald-800 text-[10px] font-bold rounded">PREVIEW OPTIMAL</button>
+      </div>
+    </div>
+
+    <div id="stage" class="flex-1 min-h-0 checker border border-gray-800 rounded-xl relative overflow-hidden">
+      <div class="absolute inset-0 flex items-center justify-center">
+        <div class="relative" id="cvWrap" style="width:640px;height:360px">
+          <div id="svgHost" class="absolute inset-0 pointer-events-none" style="visibility:hidden"></div>
+          <canvas id="cv" class="absolute inset-0" style="width:100%;height:100%"></canvas>
+          <div id="gridOv" class="absolute inset-0 pointer-events-none hidden" style="background:
+            linear-gradient(to right,transparent 33.2%,#fff5 33.3%,transparent 33.5%,transparent 66.5%,#fff5 66.6%,transparent 66.8%),
+            linear-gradient(to bottom,transparent 33.2%,#fff5 33.3%,transparent 33.5%,transparent 66.5%,#fff5 66.6%,transparent 66.8%);
+            outline:1px solid #fff5"></div>
+        </div>
+      </div>
+      <div class="absolute top-4 left-4 bg-black/60 backdrop-blur border border-gray-800 px-3 py-1 rounded-full text-xs text-cyan-300 flex items-center space-x-2">
+        <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span><span id="bgLbl">Alpha Transparan</span>
+      </div>
+    </div>
+
+    <div class="mt-3 flex items-center justify-between bg-[#12151a] p-2 rounded-xl border border-gray-800">
+      <div class="flex items-center space-x-2">
+        <button id="btnPlay" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold flex items-center"><i class="fa-solid fa-pause mr-1"></i> PAUSE</button>
+        <button id="btnReplay" class="p-1.5 px-2.5 bg-[#1d2330] text-gray-400 hover:text-white rounded-lg"><i class="fa-solid fa-rotate-right text-xs"></i></button>
+      </div>
+      <div class="flex-1 mx-4 py-2 cursor-pointer" id="seek">
+        <div class="w-full bg-gray-800 h-1.5 rounded-full overflow-hidden"><div id="seekBar" class="bg-indigo-500 h-full" style="width:0%"></div></div>
+      </div>
+      <span id="timeLbl" class="text-xs text-gray-400 font-mono">0.00s / 30s</span>
+    </div>
+  </div>
+
+  <!-- KANAN -->
+  <div class="w-[360px] bg-[#12151a] flex flex-col border-l border-gray-800">
+    <div class="flex border-b border-gray-800 text-xs font-semibold">
+      <button class="rtab on" data-rt="config"><i class="fa-solid fa-sliders mr-1"></i> CONFIG</button>
+      <button class="rtab" data-rt="assets">ASSETS</button>
+      <button class="rtab" data-rt="cover">COVER</button>
+      <button class="rtab" data-rt="logs">LOGS</button>
+    </div>
+
+    <div class="flex-1 overflow-y-auto text-xs">
+      <!-- CONFIG -->
+      <div id="p-config" class="p-4 space-y-4">
+        <div class="bg-[#181c24] p-3 rounded-xl border border-gray-800">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[11px] font-bold text-amber-400"><i class="fa-solid fa-wand-magic mr-1"></i> PRESET RESOLUSI MICROSTOCK</span>
+            <span id="brLbl" class="text-[9px] text-gray-500">Auto Bitrate</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <button class="preset" data-g="res" data-v="720"><div class="pt font-bold text-white">HD 720p</div><div class="text-[9px] text-gray-500">1280x720 • 8 Mbps</div></button>
+            <button class="preset" data-g="res" data-v="1080"><div class="pt font-bold text-white">FHD 1080p</div><div class="text-[9px] text-gray-400">1920x1080 • 20 Mbps</div></button>
+          </div>
+        </div>
+        <div>
+          <label class="block text-gray-400 mb-1.5 font-medium">RASIO CANVAS</label>
+          <div class="grid grid-cols-3 gap-2">
+            <button class="opt" data-g="ratio" data-v="16:9">16:9</button>
+            <button class="opt" data-g="ratio" data-v="9:16">9:16</button>
+            <button class="opt" data-g="ratio" data-v="1:1">1:1</button>
+          </div>
+        </div>
+        <div>
+          <div class="flex justify-between mb-1.5"><span class="text-gray-400 font-medium">RESOLUSI VIDEO</span><span class="text-[10px] text-emerald-400">MAX: 4K (UNLOCKED)</span></div>
+          <div class="grid grid-cols-4 gap-1.5">
+            <button class="opt" data-g="res" data-v="720">720p</button>
+            <button class="opt" data-g="res" data-v="1080">1080p</button>
+            <button class="opt" data-g="res" data-v="1440">2K</button>
+            <button class="opt" data-g="res" data-v="2160">4K <i class="fa-solid fa-lock-open text-[8px] ml-1 text-emerald-400"></i></button>
+          </div>
+        </div>
+        <div>
+          <label class="block text-gray-400 mb-1.5 font-medium">FRAME RATE</label>
+          <div class="grid grid-cols-3 gap-2">
+            <button class="opt" data-g="fps" data-v="24">24</button>
+            <button class="opt" data-g="fps" data-v="30">30</button>
+            <button class="opt" data-g="fps" data-v="60">60</button>
+          </div>
+        </div>
+        <div>
+          <label class="block text-gray-400 mb-1.5 font-medium">DURASI VIDEO</label>
+          <div id="durLbl" class="py-2.5 bg-[#181c24] border border-amber-500 text-amber-400 text-center font-bold rounded-lg text-sm mb-2">30 Detik</div>
+          <div class="grid grid-cols-5 gap-1.5">
+            <button class="opt amber" data-g="dur" data-v="5">5s</button>
+            <button class="opt amber" data-g="dur" data-v="10">10s</button>
+            <button class="opt amber" data-g="dur" data-v="15">15s</button>
+            <button class="opt amber" data-g="dur" data-v="30">30s</button>
+            <button class="opt amber" data-g="dur" data-v="60">60s</button>
+          </div>
+        </div>
+
+        <div class="bg-[#181c24] p-3 rounded-xl border border-gray-800 space-y-2">
+          <div class="text-[11px] font-bold text-cyan-400">PARAMETER EFEK (CANVAS)</div>
+          <label class="block text-gray-400">Warna (hue) <span id="hueV" class="text-amber-400"></span>
+            <input id="rHue" type="range" min="0" max="360" class="w-full"></label>
+          <label class="block text-gray-400">Kecepatan <span id="spdV" class="text-amber-400"></span>
+            <input id="rSpd" type="range" min="0.25" max="3" step="0.25" class="w-full"></label>
+        </div>
+
+        <div>
+          <label class="block text-gray-400 mb-1.5 font-medium">TEMA MUSIMAN</label>
+          <div class="grid grid-cols-3 gap-1.5" id="seasonGrid"></div>
+        </div>
+
+        <div>
+          <label class="block text-gray-400 mb-1.5 font-medium">PROYEK</label>
+          <div class="grid grid-cols-5 gap-1.5">
+            <button id="pjUndo" class="opt" title="Undo (Ctrl+Z)"><i class="fa-solid fa-rotate-left"></i></button>
+            <button id="pjRedo" class="opt" title="Redo (Ctrl+Y)"><i class="fa-solid fa-rotate-right"></i></button>
+            <button id="pjSave" class="opt" title="Simpan .json"><i class="fa-solid fa-floppy-disk"></i></button>
+            <label class="opt text-center cursor-pointer" title="Buka .json"><i class="fa-solid fa-folder-open"></i><input id="pjOpen" type="file" accept=".json" class="hidden"></label>
+            <button id="pjReset" class="opt" title="Reset semua"><i class="fa-solid fa-trash"></i></button>
+          </div>
+          <p class="text-[10px] text-gray-500 mt-1">Tersimpan otomatis di browser. Asset gambar ikut tersimpan hanya di file .json.</p>
+        </div>
+
+        <div class="pt-2 space-y-2">
+          <button id="btnExportOpen" class="w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-black font-bold rounded-xl shadow-lg hover:opacity-95 flex items-center justify-center space-x-2"><i class="fa-solid fa-download"></i><span>EXPORT VIDEO</span></button>
+          <button id="btnOpenTerm" class="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-black font-bold rounded-xl shadow-lg hover:opacity-95 flex items-center justify-center space-x-2"><i class="fa-solid fa-terminal"></i><span>BUKA TERMINAL</span></button>
+        </div>
+      </div>
+
+      <!-- ASSETS -->
+      <div id="p-assets" class="p-4 space-y-3 hidden">
+        <label class="block w-full py-3 text-center border-2 border-dashed border-gray-700 hover:border-amber-500 rounded-xl cursor-pointer text-gray-400">
+          <i class="fa-solid fa-upload mr-1"></i> Upload gambar (PNG/JPG/SVG/WebP)
+          <input id="fileAsset" type="file" accept="image/*" multiple class="hidden">
+        </label>
+        <p class="text-[10px] text-gray-500">Di kode JS bisa dipakai: <code class="text-amber-400">assets['nama.png']</code> (objek Image). Atau klik "Layer" untuk menempel sebagai layer.</p>
+        <div id="assetList" class="space-y-2"></div>
+      </div>
+
+      <!-- COVER -->
+      <div id="p-cover" class="p-4 space-y-3 hidden">
+        <input id="cvTitle" class="ipt" placeholder="Judul cover" value="MOTION STUDIO">
+        <input id="cvSub" class="ipt" placeholder="Subjudul" value="Alpha Loop Background">
+        <select id="cvStyle" class="ipt">
+          <option value="dark">Background gelap</option>
+          <option value="gold">Gradient emas</option>
+          <option value="trans">Transparan</option>
+        </select>
+        <canvas id="cvCover" width="1280" height="720" class="w-full rounded-lg border border-gray-800 checker"></canvas>
+        <div class="grid grid-cols-2 gap-2">
+          <button id="btnCoverGen" class="py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg font-bold">Ambil Frame Sekarang</button>
+          <button id="btnCoverDl" class="py-2 bg-amber-500 hover:bg-amber-400 text-black rounded-lg font-bold">Download PNG</button>
+        </div>
+      </div>
+
+      <!-- LOGS -->
+      <div id="p-logs" class="p-4 space-y-2 hidden">
+        <div class="flex gap-2">
+          <button id="btnLogClear" class="flex-1 py-1.5 bg-[#1d2330] border border-gray-700 rounded-lg">Bersihkan</button>
+          <button id="btnLogCopy" class="flex-1 py-1.5 bg-[#1d2330] border border-gray-700 rounded-lg">Salin</button>
+        </div>
+        <div id="logBox" class="font-mono text-[10px] space-y-1"></div>
+      </div>
+
+      <!-- VISUAL LAYER -->
+      <div id="p-layer" class="p-4 space-y-3 hidden">
+        <div class="grid grid-cols-3 gap-2">
+          <button class="opt" data-addlayer="text">+ Teks</button>
+          <button class="opt" data-addlayer="circle">+ Lingkaran</button>
+          <button class="opt" data-addlayer="rect">+ Kotak</button>
+        </div>
+        <div id="layerList" class="space-y-2"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: TERMINAL -->
+<div id="m-term" class="modal hidden fixed inset-0 z-50 bg-black/70 items-center justify-center p-4">
+  <div class="bg-[#12151a] border border-gray-700 rounded-2xl w-full max-w-3xl flex flex-col max-h-[90vh]">
+    <div class="flex items-center justify-between px-4 py-3 border-b border-gray-800">
+      <span class="font-bold text-sm text-blue-400"><i class="fa-solid fa-terminal mr-2"></i><span id="edTitle">Editor Kode JS</span></span>
+      <button class="text-gray-400 hover:text-white" data-close><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="p-4 space-y-3 overflow-y-auto">
+      <p id="edHint" class="text-[11px] text-gray-500"></p>
+      <textarea id="codeArea" spellcheck="false" class="w-full h-72 bg-[#0a0c0f] border border-gray-800 rounded-lg p-3 font-mono text-xs text-emerald-300 focus:outline-none focus:border-amber-500"></textarea>
+      <div class="flex flex-wrap gap-2">
+        <button id="edRun" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-xs font-bold"><i class="fa-solid fa-play mr-1"></i> Jalankan (Ctrl+Enter)</button>
+        <button id="edReset" class="px-4 py-2 bg-[#1d2330] border border-gray-700 rounded-lg text-xs">Reset</button>
+        <button id="edExport" class="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black rounded-lg text-xs font-bold"><i class="fa-solid fa-download mr-1"></i> Export Video...</button>
+        <button id="edPng" class="px-4 py-2 bg-[#1d2330] border border-gray-700 rounded-lg text-xs"><i class="fa-solid fa-image mr-1"></i> PNG Frame</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: EXPORT -->
+<div id="m-export" class="modal hidden fixed inset-0 z-50 bg-black/70 items-center justify-center p-4">
+  <div class="bg-[#12151a] border border-gray-700 rounded-2xl w-full max-w-lg max-h-[92vh] flex flex-col">
+    <div class="flex items-center justify-between px-4 py-3 border-b border-gray-800">
+      <span class="font-bold text-sm text-emerald-400"><i class="fa-solid fa-download mr-2"></i>Export Video (Render Offline)</span>
+      <button class="text-gray-400 hover:text-white" data-close><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="p-4 space-y-3 text-xs overflow-y-auto">
+      <div id="exInfo" class="text-gray-400"></div>
+      <select id="exFmt" class="ipt">
+        <option value="webm">WebM VP9 + Alpha (transparan)</option>
+        <option value="png">PNG Sequence + Alpha (ZIP) — alpha paling pasti</option>
+        <option value="mp4">MP4 H.264 (tanpa alpha)</option>
+      </select>
+      <p id="exNote" class="text-[10px] text-gray-500"></p>
+      <div id="exWrap" class="hidden">
+        <div class="text-[11px] text-amber-400 mb-1" id="exLbl">Merender...</div>
+        <div class="w-full bg-gray-800 h-2 rounded-full overflow-hidden"><div id="exBar" class="bg-emerald-500 h-full" style="width:0%"></div></div>
+      </div>
+      <div class="flex gap-2">
+        <button id="exGo" class="flex-1 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-black font-bold rounded-lg">Mulai Export</button>
+        <button id="exCancel" class="px-4 py-2.5 bg-[#1d2330] border border-gray-700 rounded-lg">Batal</button>
+        <button id="exLoop" class="px-4 py-2.5 bg-[#1d2330] border border-gray-700 rounded-lg">Cek Loop</button>
+      </div>
+      <div id="exLoopRes" class="text-[11px]"></div>
+      <div class="border-t border-gray-800 pt-3 space-y-2">
+        <div class="text-[11px] font-bold text-amber-400">METADATA MICROSTOCK</div>
+        <input id="mtTitle" class="ipt" placeholder="Judul (opsional, otomatis jika kosong)">
+        <button id="mtGen" class="w-full py-2 bg-[#1d2330] border border-gray-700 rounded-lg">Buat Judul, Deskripsi &amp; Keyword</button>
+        <textarea id="mtOut" class="ipt h-32 font-mono" readonly></textarea>
+        <button id="mtCopy" class="w-full py-2 bg-[#1d2330] border border-gray-700 rounded-lg">Salin</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: PROMPT AI -->
+<div id="m-prompt" class="modal hidden fixed inset-0 z-50 bg-black/70 items-center justify-center p-4">
+  <div class="bg-[#12151a] border border-gray-700 rounded-2xl w-full max-w-lg">
+    <div class="flex items-center justify-between px-4 py-3 border-b border-gray-800">
+      <span class="font-bold text-sm text-amber-400"><i class="fa-solid fa-wand-magic-sparkles mr-2"></i>Prompt AI</span>
+      <button class="text-gray-400 hover:text-white" data-close><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="p-4 space-y-3 text-xs">
+      <textarea id="promptIn" class="ipt h-24" placeholder='Contoh: partikel emas cepat dengan teks "SALE 50%"'></textarea>
+      <div class="flex flex-wrap gap-1.5" id="promptChips"></div>
+      <p class="text-[10px] text-gray-500">Mengenali: partikel, gelombang, matrix, bintang, aura, grid neon, natal, ramadan, halloween, tahun baru, valentine · warna · cepat/lambat · teks dalam tanda kutip. Berjalan lokal tanpa API.</p>
+      <button id="promptGo" class="w-full py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-black font-bold rounded-lg">Generate</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: GUIDE -->
+<div id="m-guide" class="modal hidden fixed inset-0 z-50 bg-black/70 items-center justify-center p-4">
+  <div class="bg-[#12151a] border border-gray-700 rounded-2xl w-full max-w-xl">
+    <div class="flex items-center justify-between px-4 py-3 border-b border-gray-800">
+      <span class="font-bold text-sm text-teal-400">Panduan MOV Alpha</span>
+      <button class="text-gray-400 hover:text-white" data-close><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="p-4 space-y-3 text-xs text-gray-300">
+      <p><b>Cara paling pasti (alpha dijamin):</b> export <b>PNG Sequence (ZIP)</b>, ekstrak semua part ke satu folder, lalu jalankan:</p>
+      <pre id="ffcmd" class="bg-[#0a0c0f] border border-gray-800 rounded-lg p-3 font-mono text-[11px] text-emerald-300 whitespace-pre-wrap">ffmpeg -framerate 30 -i frame_%05d.png -c:v prores_ks -profile:v 4444 -pix_fmt yuva444p10le output.mov</parameter></pre>
+      <button id="ffCopy" class="px-3 py-1.5 bg-[#1d2330] border border-gray-700 rounded-lg">Salin perintah</button>
+      <p>Dari WebM alpha ke MOV (decoder <code>libvpx-vp9</code> wajib sebelum <code>-i</code>):</p>
+      <pre class="bg-[#0a0c0f] border border-gray-800 rounded-lg p-3 font-mono text-[11px] text-emerald-300 whitespace-pre-wrap">ffmpeg -c:v libvpx-vp9 -i input.webm -c:v prores_ks -profile:v 4444 -pix_fmt yuva444p10le output.mov</pre>
+      <p class="text-gray-500">Samakan angka <code>-framerate</code> dengan FPS di Config.</p>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: LICENSE -->
+<div id="m-lic" class="modal hidden fixed inset-0 z-50 bg-black/70 items-center justify-center p-4">
+  <div class="bg-[#12151a] border border-gray-700 rounded-2xl w-full max-w-sm">
+    <div class="flex items-center justify-between px-4 py-3 border-b border-gray-800">
+      <span class="font-bold text-sm text-amber-400"><i class="fa-solid fa-crown mr-2"></i>Lisensi</span>
+      <button class="text-gray-400 hover:text-white" data-close><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="p-4 space-y-2 text-xs">
+      <div class="py-3 text-center bg-emerald-950 border border-emerald-800 text-emerald-400 font-bold rounded-lg">LISENSI PRO AKTIF</div>
+      <ul class="text-gray-300 space-y-1 pt-2">
+        <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>SVG Motion</li>
+        <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>Resolusi hingga 4K</li>
+        <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>Bulk ZIP export</li>
+        <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>Semua generator &amp; layer</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: BULK -->
+<div id="m-bulk" class="modal hidden fixed inset-0 z-50 bg-black/70 items-center justify-center p-4">
+  <div class="bg-[#12151a] border border-gray-700 rounded-2xl w-full max-w-md">
+    <div class="flex items-center justify-between px-4 py-3 border-b border-gray-800">
+      <span class="font-bold text-sm text-gray-200"><i class="fa-solid fa-file-zipper mr-2"></i>Bulk ZIP</span>
+      <button class="text-gray-400 hover:text-white" data-close><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="p-4 space-y-3 text-xs">
+      <p class="text-gray-400">Render beberapa tema sekaligus (offline, WebM) dengan setelan Config saat ini, lalu unduh satu ZIP.</p>
+      <div id="bulkList" class="grid grid-cols-2 gap-1.5"></div>
+      <div id="bulkWrap" class="hidden">
+        <div class="text-[11px] text-amber-400 mb-1" id="bulkLbl"></div>
+        <div class="w-full bg-gray-800 h-2 rounded-full overflow-hidden"><div id="bulkBar" class="bg-amber-500 h-full" style="width:0%"></div></div>
+      </div>
+      <button id="bulkGo" class="w-full py-2.5 bg-amber-500 hover:bg-amber-400 text-black font-bold rounded-lg">Mulai Render ZIP</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[#181c24] border border-amber-500 text-amber-300 text-xs px-4 py-2 rounded-lg z-[60] hidden max-w-[90vw]"></div>
+
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const rnd=(i,k)=>{const x=Math.sin(i*127.1+k*311.7)*43758.5453;return x-Math.floor(x)};
+const yieldUI=()=>new Promise(r=>{const c=new MessageChannel();c.port1.onmessage=()=>r();c.port2.postMessage(0)});
+
+/* ================= PRESET CANVAS (semua loop mulus) =================
+   Argumen: ctx, t, w, h, P{hue,speed}, assets, rnd(i,k), ph(periode), D(durasi)
+   ph(p) = fase 0..1 yang SELALU berulang bulat di dalam durasi video. */
+const PRESETS={
+'Partikel':function(ctx,t,w,h,P,assets,rnd,ph,D){
+  const s=h/1080;
+  for(let i=0;i<140;i++){
+    const k=1+Math.floor(rnd(i,3)*3);
+    const x=((rnd(i,1)+Math.sin(2*Math.PI*(ph(8)*(1+i%2)+rnd(i,7)))*0.02)+1)%1*w;
+    const y=h-((rnd(i,2)+ph(12)*k)%1)*h;
+    const r=(2+rnd(i,4)*7)*s;
+    ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);
+    ctx.fillStyle=`hsla(${P.hue+rnd(i,5)*40},90%,60%,${0.3+rnd(i,6)*0.6})`;
+    ctx.shadowColor=`hsl(${P.hue},100%,60%)`;ctx.shadowBlur=12*s;ctx.fill();
+  }
+},
+'Gelombang':function(ctx,t,w,h,P,assets,rnd,ph,D){
+  const s=h/1080;
+  for(let k=0;k<6;k++){
+    ctx.beginPath();
+    const a=2*Math.PI*ph(8)*(k+1),m=Math.sin(2*Math.PI*ph(10)+k);
+    for(let x=0;x<=w;x+=8){
+      const y=h/2+Math.sin(x/(180*s)+a+k)*(60+k*25)*s*m+(k-3)*40*s;
+      if(x===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+    }
+    ctx.strokeStyle=`hsla(${P.hue+k*12},90%,60%,${0.9-k*0.1})`;
+    ctx.lineWidth=4*s;ctx.stroke();
+  }
+},
+'Matrix':function(ctx,t,w,h,P,assets,rnd,ph,D){
+  const s=h/1080,fs=22*s,cols=Math.floor(w/fs);
+  const chars='01アイウエオカキクケコ日月火水木金ABCDEF';
+  const steps=Math.max(1,Math.round(D*6)),st=Math.floor(t/D*steps)%steps;
+  ctx.font=fs+'px monospace';
+  for(let i=0;i<cols;i++){
+    const m=1+Math.floor(rnd(i,1)*3);
+    const head=((rnd(i,2)+ph(10)*m)%1)*(h+fs*18);
+    for(let j=0;j<18;j++){
+      const y=head-j*fs;if(y<0||y>h)continue;
+      const c=chars[Math.floor(rnd(i*31+j,st+j)*chars.length)];
+      ctx.fillStyle=j===0?'#ffffff':`hsla(${P.hue},100%,55%,${1-j/18})`;
+      ctx.fillText(c,i*fs,y);
+    }
+  }
+},
+'Bintang':function(ctx,t,w,h,P,assets,rnd,ph,D){
+  const cx=w/2,cy=h/2,s=h/1080;
+  for(let i=0;i<300;i++){
+    const p=(rnd(i,1)+ph(10))%1;
+    const a=rnd(i,2)*Math.PI*2,d=p*p*Math.hypot(w,h)*0.6;
+    ctx.fillStyle=`hsla(${P.hue+rnd(i,3)*40},80%,${70+rnd(i,4)*30}%,${p})`;
+    ctx.beginPath();ctx.arc(cx+Math.cos(a)*d,cy+Math.sin(a)*d,p*3.5*s,0,Math.PI*2);ctx.fill();
+  }
+},
+'Aura':function(ctx,t,w,h,P,assets,rnd,ph,D){
+  const a=2*Math.PI*ph(12);
+  for(let i=0;i<5;i++){
+    const x=w/2+Math.cos(a*(1+i%2)+i*1.26)*w*0.25;
+    const y=h/2+Math.sin(a*(1+(i+1)%2)+i*1.26)*h*0.25;
+    const r=h*(0.25+0.08*i);
+    const g=ctx.createRadialGradient(x,y,0,x,y,r);
+    g.addColorStop(0,`hsla(${P.hue+i*25},90%,60%,0.7)`);
+    g.addColorStop(1,`hsla(${P.hue+i*25},90%,60%,0)`);
+    ctx.fillStyle=g;ctx.fillRect(0,0,w,h);
+  }
+},
+'Grid Neon':function(ctx,t,w,h,P,assets,rnd,ph,D){
+  const hz=h*0.45,s=h/1080;
+  ctx.lineWidth=2*s;ctx.strokeStyle=`hsl(${P.hue},100%,60%)`;
+  ctx.shadowColor=ctx.strokeStyle;ctx.shadowBlur=10*s;
+  for(let i=-20;i<=20;i++){ctx.beginPath();ctx.moveTo(w/2+i*40*s,hz);ctx.lineTo(w/2+i*w*0.12,h);ctx.stroke();}
+  const f=ph(4);
+  for(let k=0;k<14;k++){const p=(k+f)/14,y=hz+(h-hz)*p*p;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke();}
+},
+'Kembang Api':function(ctx,t,w,h,P,assets,rnd,ph,D){
+  const s=h/1080,n=Math.max(1,Math.round(D*P.speed/6)),u=t/D*n;
+  ctx.globalCompositeOperation='lighter';
+  for(let b=0;b<6;b++){
+    const v=u+b/6,c=Math.floor(v),l=v-c,cc=c%n,q=b+cc*13;
+    const cx=w*(0.15+0.7*rnd(q,1)),cy=h*(0.15+0.4*rnd(q,2)),hue=(P.hue+rnd(q,3)*360)%360;
+    if(l<0.15){
+      const k=l/0.15,y=h-(h-cy)*k;
+      ctx.fillStyle=`hsl(${hue},100%,80%)`;ctx.beginPath();ctx.arc(cx,y,4*s,0,7);ctx.fill();
+    }else{
+      const e=(l-0.15)/0.85,d=(1-Math.pow(1-e,3))*h*0.26*(0.7+rnd(q,4)*0.5);
+      for(let j=0;j<70;j++){
+        const a=j/70*Math.PI*2+rnd(q,j+5),r2=d*(0.6+0.4*rnd(j,q));
+        const x=cx+Math.cos(a)*r2,y=cy+Math.sin(a)*r2+e*e*h*0.12;
+        ctx.fillStyle=`hsla(${hue+rnd(j,9)*30},100%,65%,${(1-e)*(1-e)})`;
+        ctx.beginPath();ctx.arc(x,y,(3+2*(1-e))*s,0,7);ctx.fill();
+      }
+    }
+  }
+  ctx.globalCompositeOperation='source-over';
+},
+'Hati Cinta':function(ctx,t,w,h,P,assets,rnd,ph,D){
+  const s=h/1080;
+  for(let i=0;i<40;i++){
+    const m=1+Math.floor(rnd(i,3)*2);
+    const y=h*(1.15-((rnd(i,2)+ph(14)*m)%1)*1.3);
+    const x=w*rnd(i,1)+Math.sin(2*Math.PI*(ph(7)*m+rnd(i,4)))*30*s;
+    const sz=(18+rnd(i,5)*50)*s,hue=(P.hue+rnd(i,6)*30)%360;
+    ctx.save();ctx.translate(x,y);ctx.rotate(Math.sin(2*Math.PI*(ph(7)+rnd(i,7)))*0.3);
+    ctx.fillStyle=`hsla(${hue},90%,60%,${0.5+rnd(i,8)*0.5})`;
+    ctx.shadowColor=`hsl(${hue},100%,60%)`;ctx.shadowBlur=14*s;
+    ctx.beginPath();ctx.moveTo(0,sz*0.35);
+    ctx.bezierCurveTo(-sz,-sz*0.3,-sz*0.5,-sz,0,-sz*0.4);
+    ctx.bezierCurveTo(sz*0.5,-sz,sz,-sz*0.3,0,sz*0.35);
+    ctx.fill();ctx.restore();
+  }
+}
+};
+const HUE={'Partikel':40,'Gelombang':190,'Matrix':130,'Bintang':210,'Aura':280,'Grid Neon':300,'Kembang Api':45,'Hati Cinta':340};
+const srcOf=fn=>{const s=fn.toString();return s.slice(s.indexOf('{')+1,s.lastIndexOf('}')).replace(/^\n/,'').replace(/^ {1,8}/gm,'').trimEnd()};
+
+/* ================= TEMA SVG (durasi animasi CSS membagi 30 detik) ================= */
+const SVGS={};
+SVGS['Natal']=`<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+<defs>
+  <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22c55e"/><stop offset="1" stop-color="#14532d"/></linearGradient>
+  <linearGradient id="g2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#16a34a"/><stop offset="1" stop-color="#0f3d22"/></linearGradient>
+  <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fde68a"/><stop offset="1" stop-color="#f59e0b"/></linearGradient>
+  <linearGradient id="txt" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fecaca"/><stop offset="0.5" stop-color="#ffffff"/><stop offset="1" stop-color="#fde68a"/></linearGradient>
+  <filter id="glow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="7" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<style>
+.f{transform-box:fill-box;transform-origin:center}
+@keyframes twinkle{0%,100%{opacity:.3}50%{opacity:1}}
+@keyframes starpulse{0%,100%{transform:scale(1) rotate(0deg)}50%{transform:scale(1.2) rotate(10deg)}}
+@keyframes fall{0%{transform:translate(0,-80px);opacity:0}8%{opacity:1}50%{transform:translate(50px,560px)}92%{opacity:1}100%{transform:translate(0,1160px);opacity:0}}
+@keyframes sway{0%,100%{transform:rotate(-1.2deg)}50%{transform:rotate(1.2deg)}}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes ray{0%,100%{opacity:.15}50%{opacity:.5}}
+.tw{animation:twinkle 3s ease-in-out infinite}
+.tw2{animation:twinkle 1.5s ease-in-out infinite}
+.star{animation:starpulse 3s ease-in-out infinite}
+.sn{animation:fall 10s linear infinite}
+.sn2{animation:fall 15s linear infinite}
+.sn3{animation:fall 6s linear infinite}
+.sw{transform-box:fill-box;transform-origin:50% 100%;animation:sway 5s ease-in-out infinite}
+.bob{animation:bob 3s ease-in-out infinite}
+.ray{animation:ray 6s ease-in-out infinite}
+</style>
+<g class="ray"><circle cx="960" cy="560" r="430" fill="#fde68a" opacity=".12"/></g>
+<text x="960" y="130" text-anchor="middle" font-family="Georgia,serif" font-size="84" font-weight="700" fill="url(#txt)" filter="url(#glow)" letter-spacing="8">MERRY CHRISTMAS</text>
+<g class="sw">
+  <rect x="925" y="870" width="70" height="95" rx="8" fill="#7c4a1e"/>
+  <polygon points="960,500 630,890 1290,890" fill="url(#g2)"/>
+  <polygon points="960,370 700,710 1220,710" fill="url(#g1)"/>
+  <polygon points="960,250 780,520 1140,520" fill="url(#g1)"/>
+  <path d="M815,430 Q960,480 1105,430" fill="none" stroke="url(#gold)" stroke-width="7" stroke-linecap="round"/>
+  <path d="M750,640 Q960,710 1170,640" fill="none" stroke="url(#gold)" stroke-width="7" stroke-linecap="round"/>
+  <path d="M690,830 Q960,920 1230,830" fill="none" stroke="url(#gold)" stroke-width="7" stroke-linecap="round"/>
+  <g filter="url(#glow)">
+    <circle class="tw" cx="870" cy="447" r="10" fill="#ef4444"/>
+    <circle class="tw2" cx="960" cy="470" r="10" fill="#fde047"/>
+    <circle class="tw" style="animation-delay:-1s" cx="1050" cy="447" r="10" fill="#38bdf8"/>
+    <circle class="tw2" cx="800" cy="665" r="10" fill="#fde047"/>
+    <circle class="tw" style="animation-delay:-2s" cx="880" cy="692" r="10" fill="#ef4444"/>
+    <circle class="tw2" style="animation-delay:-.5s" cx="960" cy="702" r="10" fill="#38bdf8"/>
+    <circle class="tw" cx="1040" cy="692" r="10" fill="#fde047"/>
+    <circle class="tw2" cx="1120" cy="665" r="10" fill="#ef4444"/>
+    <circle class="tw" cx="760" cy="860" r="10" fill="#38bdf8"/>
+    <circle class="tw2" cx="860" cy="895" r="10" fill="#fde047"/>
+    <circle class="tw" style="animation-delay:-1.5s" cx="960" cy="910" r="10" fill="#ef4444"/>
+    <circle class="tw2" cx="1060" cy="895" r="10" fill="#38bdf8"/>
+    <circle class="tw" style="animation-delay:-2.5s" cx="1160" cy="860" r="10" fill="#fde047"/>
+  </g>
+  <circle class="bob" cx="900" cy="560" r="22" fill="#dc2626"/>
+  <circle class="bob" style="animation-delay:-1s" cx="1020" cy="580" r="20" fill="#fbbf24"/>
+  <circle class="bob" style="animation-delay:-2s" cx="830" cy="770" r="24" fill="#3b82f6"/>
+  <circle class="bob" cx="1100" cy="780" r="24" fill="#dc2626"/>
+  <circle class="bob" style="animation-delay:-1.5s" cx="960" cy="800" r="26" fill="#fbbf24"/>
+  <circle class="bob" style="animation-delay:-.5s" cx="960" cy="340" r="16" fill="#dc2626"/>
+  <g transform="translate(960,225)" filter="url(#glow)">
+    <polygon class="f star" fill="url(#gold)" points="0,-50 12.9,-17.8 47.6,-15.5 20.9,6.8 29.4,40.5 0,22 -29.4,40.5 -20.9,6.8 -47.6,-15.5 -12.9,-17.8"/>
+  </g>
+</g>
+<g>
+  <rect x="640" y="905" width="130" height="100" rx="6" fill="#dc2626"/><rect x="695" y="905" width="20" height="100" fill="#fde68a"/><rect x="640" y="945" width="130" height="18" fill="#fde68a"/>
+  <rect x="1160" y="925" width="150" height="80" rx="6" fill="#2563eb"/><rect x="1225" y="925" width="20" height="80" fill="#fde68a"/><rect x="1160" y="955" width="150" height="16" fill="#fde68a"/>
+  <rect x="1020" y="945" width="100" height="60" rx="6" fill="#a855f7"/><rect x="1060" y="945" width="16" height="60" fill="#fde68a"/>
+</g>
+<g fill="#ffffff" filter="url(#glow)">
+  <circle class="sn" cx="80" cy="0" r="7"/>
+  <circle class="sn2" style="animation-delay:-3s" cx="200" cy="0" r="5"/>
+  <circle class="sn3" style="animation-delay:-1s" cx="320" cy="0" r="6"/>
+  <circle class="sn" style="animation-delay:-5s" cx="440" cy="0" r="8"/>
+  <circle class="sn2" style="animation-delay:-9s" cx="560" cy="0" r="4"/>
+  <circle class="sn3" style="animation-delay:-3s" cx="680" cy="0" r="7"/>
+  <circle class="sn" style="animation-delay:-8s" cx="800" cy="0" r="5"/>
+  <circle class="sn2" style="animation-delay:-12s" cx="920" cy="0" r="6"/>
+  <circle class="sn3" style="animation-delay:-5s" cx="1040" cy="0" r="8"/>
+  <circle class="sn" style="animation-delay:-2s" cx="1160" cy="0" r="5"/>
+  <circle class="sn2" style="animation-delay:-6s" cx="1280" cy="0" r="7"/>
+  <circle class="sn3" style="animation-delay:-2s" cx="1400" cy="0" r="4"/>
+  <circle class="sn" style="animation-delay:-7s" cx="1520" cy="0" r="6"/>
+  <circle class="sn2" style="animation-delay:-14s" cx="1640" cy="0" r="8"/>
+  <circle class="sn3" style="animation-delay:-4s" cx="1760" cy="0" r="5"/>
+  <circle class="sn" style="animation-delay:-4s" cx="1860" cy="0" r="7"/>
+  <circle class="sn2" style="animation-delay:-1s" cx="140" cy="0" r="4"/>
+  <circle class="sn3" style="animation-delay:-5.5s" cx="1340" cy="0" r="6"/>
+</g>
+<g fill="#fde68a">
+  <circle class="tw" cx="180" cy="220" r="5"/><circle class="tw2" cx="1720" cy="260" r="5"/>
+  <circle class="tw" style="animation-delay:-1s" cx="400" cy="140" r="4"/><circle class="tw2" cx="1500" cy="170" r="4"/>
+  <circle class="tw" style="animation-delay:-2s" cx="260" cy="520" r="4"/><circle class="tw2" cx="1660" cy="560" r="4"/>
+</g>
+</svg>`;
+
+SVGS['Ramadan']=`<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+<defs>
+  <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fde68a"/><stop offset="1" stop-color="#f59e0b"/></linearGradient>
+  <linearGradient id="txt" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fde68a"/><stop offset="0.5" stop-color="#ffffff"/><stop offset="1" stop-color="#fcd34d"/></linearGradient>
+  <radialGradient id="halo"><stop offset="0" stop-color="#fde68a" stop-opacity=".7"/><stop offset="1" stop-color="#fde68a" stop-opacity="0"/></radialGradient>
+  <filter id="glow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  <path id="st" d="M0,-16 L3.5,-3.5 L16,0 L3.5,3.5 L0,16 L-3.5,3.5 L-16,0 L-3.5,-3.5Z" fill="#fde68a"/>
+  <g id="lan">
+    <path d="M-8,-30 L8,-30 L12,-8 L-12,-8 Z" fill="url(#gold)"/>
+    <path d="M-40,-8 L40,-8 L52,70 L-52,70 Z" fill="#b45309" fill-opacity=".4"/>
+    <path d="M-40,-8 L40,-8 L52,70 L-52,70 Z" fill="none" stroke="url(#gold)" stroke-width="5"/>
+    <path d="M0,-8 L0,70 M-20,-8 L-26,70 M20,-8 L26,70" stroke="url(#gold)" stroke-width="3" fill="none"/>
+    <path d="M-52,70 L52,70 L40,92 L-40,92 Z" fill="url(#gold)"/>
+    <ellipse cx="0" cy="34" rx="20" ry="30" fill="#fff7d6" fill-opacity=".9"/>
+  </g>
+</defs>
+<style>
+@keyframes tw{0%,100%{opacity:.2}50%{opacity:1}}
+@keyframes swing{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(5deg)}}
+@keyframes flo{0%,100%{transform:translateY(0)}50%{transform:translateY(-20px)}}
+@keyframes gp{0%,100%{opacity:.25}50%{opacity:.9}}
+.tw{animation:tw 3s ease-in-out infinite}.tw2{animation:tw 5s ease-in-out infinite}
+.sw{transform-box:view-box;animation:swing 5s ease-in-out infinite}
+.sw2{transform-box:view-box;animation:swing 6s ease-in-out infinite}
+.fl{animation:flo 6s ease-in-out infinite}.gp{animation:gp 6s ease-in-out infinite}
+</style>
+<text x="960" y="150" text-anchor="middle" font-family="Georgia,serif" font-size="92" font-weight="700" fill="url(#txt)" filter="url(#glow)" letter-spacing="8">RAMADAN KAREEM</text>
+<text x="960" y="215" text-anchor="middle" font-family="Georgia,serif" font-size="38" fill="#e2e8f0" letter-spacing="4">Selamat Menunaikan Ibadah Puasa</text>
+<g class="fl">
+  <circle class="gp" cx="1330" cy="400" r="340" fill="url(#halo)"/>
+  <path d="M1400,220 A180,180 0 0 0 1400,580 A230,230 0 0 1 1400,220 Z" fill="url(#gold)" filter="url(#glow)"/>
+</g>
+<g>
+  <use href="#st" class="tw" transform="translate(620,330) scale(1.4)"/>
+  <use href="#st" class="tw2" transform="translate(1080,300) scale(1)"/>
+  <use href="#st" class="tw" style="animation-delay:-1s" transform="translate(760,480) scale(.8)"/>
+  <use href="#st" class="tw2" style="animation-delay:-2s" transform="translate(1020,520) scale(1.2)"/>
+  <use href="#st" class="tw" style="animation-delay:-2s" transform="translate(1600,640) scale(1)"/>
+  <use href="#st" class="tw2" transform="translate(500,620) scale(.9)"/>
+  <use href="#st" class="tw" transform="translate(1180,700) scale(.7)"/>
+  <use href="#st" class="tw2" style="animation-delay:-1s" transform="translate(880,640) scale(1.1)"/>
+</g>
+<g class="sw" style="transform-origin:240px 0px"><line x1="240" y1="0" x2="240" y2="300" stroke="#fcd34d" stroke-width="3"/><use href="#lan" transform="translate(240,330)"/><circle class="tw2" cx="240" cy="364" r="50" fill="#fde68a" filter="url(#glow)"/></g>
+<g class="sw2" style="transform-origin:420px 0px"><line x1="420" y1="0" x2="420" y2="200" stroke="#fcd34d" stroke-width="3"/><use href="#lan" transform="translate(420,230) scale(.8)"/><circle class="tw" cx="420" cy="258" r="40" fill="#fde68a" filter="url(#glow)"/></g>
+<g class="sw2" style="transform-origin:1620px 0px"><line x1="1620" y1="0" x2="1620" y2="260" stroke="#fcd34d" stroke-width="3"/><use href="#lan" transform="translate(1620,290)"/><circle class="tw" cx="1620" cy="324" r="50" fill="#fde68a" filter="url(#glow)"/></g>
+<g class="sw" style="transform-origin:1780px 0px"><line x1="1780" y1="0" x2="1780" y2="360" stroke="#fcd34d" stroke-width="3"/><use href="#lan" transform="translate(1780,390) scale(.9)"/><circle class="tw2" cx="1780" cy="422" r="45" fill="#fde68a" filter="url(#glow)"/></g>
+<g fill="#0f3f3a" stroke="#fcd34d" stroke-opacity=".5" stroke-width="3">
+  <rect x="0" y="960" width="1920" height="120"/>
+  <path d="M760,960 L760,900 A200,200 0 0 1 1160,900 L1160,960 Z"/>
+  <path d="M960,700 L960,650" fill="none" stroke="#fcd34d" stroke-opacity=".9"/>
+  <circle cx="960" cy="640" r="10" fill="#fcd34d" stroke="none"/>
+  <rect x="640" y="660" width="40" height="300"/><polygon points="636,660 684,660 660,600"/>
+  <rect x="1240" y="660" width="40" height="300"/><polygon points="1236,660 1284,660 1260,600"/>
+  <path d="M180,960 L180,930 A90,90 0 0 1 360,930 L360,960 Z"/>
+  <path d="M1560,960 L1560,930 A90,90 0 0 1 1740,930 L1740,960 Z"/>
+</g>
+</svg>`;
+
+SVGS['Halloween']=`<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+<defs>
+  <radialGradient id="moon"><stop offset="0" stop-color="#fff7ed"/><stop offset=".6" stop-color="#fdba74"/><stop offset="1" stop-color="#f97316"/></radialGradient>
+  <radialGradient id="halo"><stop offset="0" stop-color="#fb923c" stop-opacity=".6"/><stop offset="1" stop-color="#fb923c" stop-opacity="0"/></radialGradient>
+  <filter id="glow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  <path id="bat" d="M0,0 Q-30,-34 -78,-14 Q-56,0 -46,14 Q-28,2 -14,16 L0,6 L14,16 Q28,2 46,14 Q56,0 78,-14 Q30,-34 0,0Z" fill="#1e1b2e" stroke="#a78bfa" stroke-width="2"/>
+</defs>
+<style>
+@keyframes fly{from{transform:translateX(-300px)}to{transform:translateX(2300px)}}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-50px)}}
+@keyframes flap{0%,100%{transform:scaleY(1)}50%{transform:scaleY(.4)}}
+@keyframes gp{0%,100%{opacity:.5}50%{opacity:1}}
+@keyframes flo{0%,100%{transform:translateY(0)}50%{transform:translateY(-30px)}}
+@keyframes drop{0%,100%{transform:translateY(0)}50%{transform:translateY(170px)}}
+@keyframes sway{0%,100%{transform:rotate(-1.5deg)}50%{transform:rotate(1.5deg)}}
+@keyframes tw{0%,100%{opacity:.3}50%{opacity:1}}
+.fly1{animation:fly 15s linear infinite}.fly2{animation:fly 10s linear infinite}.fly3{animation:fly 30s linear infinite}
+.bob{animation:bob 3s ease-in-out infinite}.bob2{animation:bob 5s ease-in-out infinite}
+.flap{transform-box:fill-box;transform-origin:center;animation:flap .5s ease-in-out infinite}
+.gp{animation:gp 6s ease-in-out infinite}.fl{animation:flo 6s ease-in-out infinite}
+.dr{animation:drop 6s ease-in-out infinite}
+.pk{transform-box:fill-box;transform-origin:50% 100%;animation:sway 5s ease-in-out infinite}
+.tw{animation:tw 3s ease-in-out infinite}.tw2{animation:tw 1.5s ease-in-out infinite}
+</style>
+<text x="960" y="150" text-anchor="middle" font-family="Georgia,serif" font-size="96" font-weight="700" fill="#fb923c" filter="url(#glow)" letter-spacing="8">HAPPY HALLOWEEN</text>
+<circle class="gp" cx="1500" cy="420" r="340" fill="url(#halo)"/>
+<circle cx="1500" cy="420" r="170" fill="url(#moon)"/>
+<circle cx="1450" cy="380" r="26" fill="#f97316" fill-opacity=".35"/><circle cx="1550" cy="460" r="36" fill="#f97316" fill-opacity=".3"/><circle cx="1500" cy="350" r="14" fill="#f97316" fill-opacity=".3"/>
+<g fill="#fde68a"><circle class="tw" cx="300" cy="260" r="5"/><circle class="tw2" cx="700" cy="300" r="4"/><circle class="tw" style="animation-delay:-1s" cx="1000" cy="260" r="5"/><circle class="tw2" cx="1750" cy="200" r="4"/><circle class="tw" cx="200" cy="520" r="4"/></g>
+<g class="fly1" style="animation-delay:-4s"><g class="bob"><g class="flap"><use href="#bat" x="0" y="320"/></g></g></g>
+<g class="fly2" style="animation-delay:-2s"><g class="bob2"><g class="flap"><use href="#bat" x="0" y="480" transform="scale(.7)"/></g></g></g>
+<g class="fly3" style="animation-delay:-12s"><g class="bob"><g class="flap"><use href="#bat" x="0" y="250"/></g></g></g>
+<g class="dr"><line x1="1700" y1="-400" x2="1700" y2="300" stroke="#cbd5e1" stroke-width="3"/>
+  <circle cx="1700" cy="320" r="26" fill="#1e1b2e" stroke="#a78bfa" stroke-width="2"/>
+  <circle cx="1692" cy="314" r="5" fill="#ef4444"/><circle cx="1708" cy="314" r="5" fill="#ef4444"/>
+  <path d="M1676,310 L1640,290 M1676,320 L1636,322 M1676,330 L1640,350 M1724,310 L1760,290 M1724,320 L1764,322 M1724,330 L1760,350" stroke="#1e1b2e" stroke-width="5" fill="none"/></g>
+<g class="fl">
+  <path d="M1080,640 Q1080,520 1180,520 Q1280,520 1280,640 L1280,760 Q1260,730 1240,760 Q1220,730 1200,760 Q1180,730 1160,760 Q1140,730 1120,760 Q1100,730 1080,760 Z" fill="#e0f2fe" fill-opacity=".92" filter="url(#glow)"/>
+  <circle cx="1145" cy="620" r="14" fill="#0f172a"/><circle cx="1215" cy="620" r="14" fill="#0f172a"/><ellipse cx="1180" cy="670" rx="14" ry="20" fill="#0f172a"/>
+</g>
+<g class="pk">
+  <ellipse cx="560" cy="860" rx="170" ry="140" fill="#f97316"/>
+  <ellipse cx="480" cy="860" rx="90" ry="140" fill="#ea580c" fill-opacity=".55"/>
+  <ellipse cx="640" cy="860" rx="90" ry="140" fill="#ea580c" fill-opacity=".55"/>
+  <ellipse cx="560" cy="860" rx="50" ry="140" fill="#fb923c" fill-opacity=".6"/>
+  <path d="M548,730 Q556,690 590,680 L600,698 Q575,704 572,730 Z" fill="#3f6212"/>
+  <g class="tw2" fill="#fde047" filter="url(#glow)">
+    <polygon points="490,830 530,830 510,790"/><polygon points="590,830 630,830 610,790"/>
+    <path d="M480,890 L520,920 L545,895 L570,925 L600,895 L625,920 L645,890 L630,950 Q560,990 490,950 Z"/>
+  </g>
+</g>
+<g class="pk" style="animation-delay:-2s">
+  <ellipse cx="860" cy="940" rx="100" ry="82" fill="#f97316"/>
+  <ellipse cx="810" cy="940" rx="52" ry="82" fill="#ea580c" fill-opacity=".55"/><ellipse cx="910" cy="940" rx="52" ry="82" fill="#ea580c" fill-opacity=".55"/>
+  <path d="M852,860 Q858,838 878,832 L884,846 Q866,850 864,862 Z" fill="#3f6212"/>
+  <g class="tw" fill="#fde047" filter="url(#glow)"><polygon points="820,925 846,925 833,900"/><polygon points="874,925 900,925 887,900"/><path d="M820,960 Q860,990 900,960 L890,975 Q860,995 830,975 Z"/></g>
+</g>
+<rect x="0" y="1000" width="1920" height="80" fill="#1e1b2e" fill-opacity=".85"/>
+</svg>`;
+
+/* ================= STATE ================= */
+const S={mode:'canvas',ratio:'16:9',res:1080,fps:30,dur:30,bg:'alpha',playing:true,t:0,optimal:true,grid:false,
+  P:{hue:40,speed:1},code:'',svg:SVGS['Natal'],fn:null,layers:[],assets:{},assetImgs:{},preset:'Partikel',theme:'Partikel'};
+const BR={720:8,1080:20,1440:35,2160:60};
+const BGS={alpha:['Alpha Transparan','ALPHA',''],black:['Background Hitam','HITAM','#000000'],white:['Background Putih','PUTIH','#ffffff'],green:['Chroma Green','HIJAU','#00b140']};
+const SEASONS={'Natal':['svg','Natal'],'Ramadan':['svg','Ramadan'],'Halloween':['svg','Halloween'],'Tahun Baru':['canvas','Kembang Api'],'Valentine':['canvas','Hati Cinta']};
+const cv=$('#cv');
+let lastErr='',recording=false,cancelFlag=false,curRt='config';
+
+/* ================= UTIL ================= */
+const LOGS=[];
+function log(m,type='info'){LOGS.push({t:new Date().toLocaleTimeString('id-ID'),m:String(m),type});if(LOGS.length>300)LOGS.shift();if(curRt==='logs')renderLogs()}
+function renderLogs(){const c={info:'text-gray-300',ok:'text-emerald-400',err:'text-red-400',warn:'text-amber-400'};
+  $('#logBox').innerHTML=LOGS.slice().reverse().map(l=>`<div class="${c[l.type]||c.info}"><span class="text-gray-600">[${l.t}]</span> ${l.m.replace(/</g,'&lt;')}</div>`).join('')}
+let toastT;function toast(m){const e=$('#toast');e.textContent=m;e.classList.remove('hidden');clearTimeout(toastT);toastT=setTimeout(()=>e.classList.add('hidden'),3000)}
+function dl(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),8000)}
+function openM(id){const m=$('#'+id);m.classList.remove('hidden');m.classList.add('flex')}
+function closeM(){$$('.modal').forEach(m=>{m.classList.add('hidden');m.classList.remove('flex')})}
+$$('[data-close]').forEach(b=>b.onclick=closeM);
+$$('.modal').forEach(m=>m.addEventListener('mousedown',e=>{if(e.target===m)closeM()}));
+const debounce=(f,ms)=>{let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>f(...a),ms)}};
+function dims(){const s=S.res,e=Math.round(s*16/9/2)*2;return S.ratio==='16:9'?[e,s]:S.ratio==='9:16'?[s,e]:[s,s]}
+const mkPh=t=>p=>{const n=Math.max(1,Math.round(S.dur*(S.P.speed||1)/p));return((t/S.dur)*n)%1};
+
+/* ================= COMPILE (canvas) ================= */
+function compile(){
+  try{S.fn=new Function('ctx','t','w','h','P','assets','rnd','ph','D',S.code);lastErr='';log('Kode JS OK','ok');return true}
+  catch(e){log('Error sintaks: '+e.message,'err');toast('Error: '+e.message);return false}
+}
+
+/* ================= SVG MOTION (inline di shadow DOM, sinkron timeline) ================= */
+const host=$('#svgHost'),shadow=host.attachShadow({mode:'open'});
+shadow.innerHTML='<style>:host{display:block}svg{display:block;width:100%;height:100%}</style><div id="box" style="width:100%;height:100%"></div>';
+let svgEl=null,anims=[];
+function setSvg(){
+  const box=shadow.getElementById('box');
+  const clean=S.svg.replace(/<script[\s\S]*?<\/script>/gi,'').replace(/\son\w+\s*=/gi,' data-x=');
+  box.innerHTML=clean;
+  svgEl=box.querySelector('svg');
+  if(!svgEl){anims=[];log('SVG tidak valid / kosong','err');return}
+  if(!svgEl.getAttribute('viewBox')){
+    const w=parseFloat(svgEl.getAttribute('width'))||1920,h=parseFloat(svgEl.getAttribute('height'))||1080;
+    svgEl.setAttribute('viewBox',`0 0 ${w} ${h}`);
+  }
+  svgEl.removeAttribute('width');svgEl.removeAttribute('height');
+  anims=svgEl.getAnimations({subtree:true});
+  anims.forEach(a=>a.pause());
+  if(svgEl.querySelector('animate,animateTransform,animateMotion,set'))log('Peringatan: animasi SMIL tidak ikut seek/export. Pakai animasi CSS (@keyframes).','warn');
+  setAnimTime(S.t);
+}
+function setAnimTime(t){const ms=t*1000;for(const a of anims)a.currentTime=ms}
+const SKIP=new Set(['offset','computedOffset','easing','composite']);
+function bakeSvg(dw,dh){
+  const clone=svgEl.cloneNode(true);
+  const src=svgEl.querySelectorAll('*'),dst=clone.querySelectorAll('*');
+  const idx=new Map();src.forEach((el,i)=>idx.set(el,i));
+  const jobs=new Map();
+  for(const a of anims){
+    const tg=a.effect&&a.effect.target;if(!tg||tg===svgEl)continue;
+    let set=jobs.get(tg);if(!set){set=new Set();jobs.set(tg,set)}
+    for(const kf of a.effect.getKeyframes())for(const k in kf)if(!SKIP.has(k))set.add(k);
+  }
+  for(const [el,props] of jobs){
+    const i=idx.get(el);if(i===undefined)continue;
+    const cs=getComputedStyle(el),d=dst[i];
+    if(props.has('transform')||props.has('rotate')||props.has('scale')||props.has('translate')){props.add('transformOrigin');props.add('transformBox')}
+    props.forEach(p=>{try{d.style[p]=cs[p]}catch(e){}});
+  }
+  const st=document.createElementNS('http://www.w3.org/2000/svg','style');
+  st.textContent='*{animation:none !important}';
+  clone.appendChild(st);
+  clone.setAttribute('width',dw);clone.setAttribute('height',dh);
+  return new XMLSerializer().serializeToString(clone);
+}
+async function drawSvg(ctx,t,w,h){
+  if(!svgEl)return;
+  setAnimTime(t);
+  const vb=svgEl.viewBox.baseVal,vw=vb.width||1920,vh=vb.height||1080;
+  const k=Math.min(w/vw,h/vh),dw=Math.max(1,Math.round(vw*k)),dh=Math.max(1,Math.round(vh*k));
+  const xml=bakeSvg(dw,dh);
+  const url=URL.createObjectURL(new Blob([xml],{type:'image/svg+xml;charset=utf-8'}));
+  try{
+    const img=await new Promise((res,rej)=>{const im=new Image();im.onload=()=>res(im);im.onerror=()=>rej(new Error('Gagal merender SVG (cek sintaks SVG)'));im.src=url});
+    ctx.drawImage(img,Math.round((w-dw)/2),Math.round((h-dh)/2),dw,dh);
+  }finally{URL.revokeObjectURL(url)}
+}
+function applyMode(){host.style.visibility=S.mode==='svg'?'visible':'hidden'}
+
+/* ================= RENDER ================= */
+const cyc=sec=>Math.max(1,Math.round(S.dur/sec));
+function drawLayers(ctx,t,w,h){
+  const u=t/S.dur,TAU=Math.PI*2;
+  for(const L of S.layers){
+    ctx.save();let a=1,sc=1,rot=0,dx=0,dy=0;
+    if(L.anim==='fade')a=0.5+0.5*Math.sin(TAU*u*cyc(3));
+    else if(L.anim==='pulse')sc=1+0.1*Math.sin(TAU*u*cyc(1.5));
+    else if(L.anim==='spin')rot=TAU*u*cyc(6);
+    else if(L.anim==='slide')dx=Math.sin(TAU*u*cyc(6))*w*0.15;
+    else if(L.anim==='float')dy=Math.sin(TAU*u*cyc(3))*h*0.03;
+    const size=L.size/100*h;
+    ctx.globalAlpha=a;ctx.translate(L.x/100*w+dx,L.y/100*h+dy);ctx.rotate(rot);ctx.scale(sc,sc);
+    ctx.fillStyle=L.color;ctx.shadowBlur=0;
+    if(L.type==='text'){ctx.font=`700 ${size}px system-ui,sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(L.text,0,0)}
+    else if(L.type==='circle'){ctx.beginPath();ctx.arc(0,0,size/2,0,Math.PI*2);ctx.fill()}
+    else if(L.type==='rect'){ctx.fillRect(-size/2,-size/2,size,size)}
+    else if(L.type==='image'){const im=S.assetImgs[L.asset];if(im&&im.complete&&im.naturalWidth){const k=im.naturalWidth/im.naturalHeight;ctx.drawImage(im,-size*k/2,-size/2,size*k,size)}}
+    ctx.restore();
+  }
+}
+function runCanvasFn(ctx,t,w,h){
+  if(!S.fn)return;
+  try{S.fn(ctx,t,w,h,S.P,S.assetImgs,rnd,mkPh(t),S.dur)}
+  catch(e){if(e.message!==lastErr){lastErr=e.message;log('Runtime error: '+e.message,'err')}}
+}
+/* preview (sinkron) */
+function renderFrame(c,t){
+  const ctx=c.getContext('2d'),w=c.width,h=c.height;
+  ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,w,h);
+  if(S.mode==='canvas'){ctx.save();runCanvasFn(ctx,t,w,h);ctx.restore()}
+  drawLayers(ctx,t,w,h);
+}
+/* export / cover (async, mendukung SVG) */
+async function renderAt(c,t,bgFill){
+  const ctx=c.getContext('2d'),w=c.width,h=c.height;
+  ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,w,h);
+  if(bgFill){ctx.fillStyle=bgFill;ctx.fillRect(0,0,w,h)}
+  ctx.save();
+  if(S.mode==='canvas')runCanvasFn(ctx,t,w,h);else await drawSvg(ctx,t,w,h);
+  ctx.restore();
+  drawLayers(ctx,t,w,h);
+}
+
+/* ================= SETTINGS UI ================= */
+function fitStage(){
+  const r=$('#stage').getBoundingClientRect(),[w,h]=dims();
+  const k=Math.min((r.width-24)/w,(r.height-24)/h);
+  const wr=$('#cvWrap');wr.style.width=Math.max(20,Math.floor(w*k))+'px';wr.style.height=Math.max(20,Math.floor(h*k))+'px';
+}
+new ResizeObserver(fitStage).observe($('#stage'));
+function applySettings(){
+  const [w,h]=dims();let pw=w,ph=h;
+  if(S.optimal&&Math.max(w,h)>1280){const k=1280/Math.max(w,h);pw=Math.round(w*k);ph=Math.round(h*k)}
+  cv.width=pw;cv.height=ph;fitStage();
+  $('#infoLbl').textContent=`${w}x${h} • ${S.fps} FPS`;
+  $('#durLbl').textContent=S.dur+' Detik';
+  $('#brLbl').textContent='Auto Bitrate • '+BR[S.res]+' Mbps';
+  $$('[data-g]').forEach(b=>b.classList.toggle('on',String(S[b.dataset.g])===b.dataset.v));
+  $('#btnOpt').className=S.optimal?'px-2 py-1 bg-emerald-950 text-emerald-400 border border-emerald-800 text-[10px] font-bold rounded':'px-2 py-1 bg-[#161b22] text-gray-400 border border-gray-700 text-[10px] font-bold rounded';
+  $('#btnOpt').textContent=S.optimal?'PREVIEW OPTIMAL':'PREVIEW FULL';
+  if(S.t>=S.dur)S.t=0;
+}
+$$('[data-g]').forEach(b=>b.onclick=()=>{const g=b.dataset.g;S[g]=g==='ratio'?b.dataset.v:+b.dataset.v;applySettings();log(`Setting ${g} = ${b.dataset.v}`);commitD()});
+function syncParams(){$('#rHue').value=S.P.hue;$('#rSpd').value=S.P.speed;$('#hueV').textContent=S.P.hue;$('#spdV').textContent=S.P.speed+'x'}
+$('#rHue').oninput=e=>{S.P.hue=+e.target.value;syncParams();commitD()};
+$('#rSpd').oninput=e=>{S.P.speed=+e.target.value;syncParams();commitD()};
+
+function setBg(k){S.bg=k;const st=$('#stage');
+  st.classList.toggle('checker',k==='alpha');st.style.backgroundColor=BGS[k][2]||'';
+  $('#bgLbl').textContent=BGS[k][0];$('#alphaLbl').textContent=BGS[k][1]}
+$('#btnAlpha').onclick=e=>{e.stopPropagation();$('#menuAlpha').classList.toggle('hidden');$('#menuGen').classList.add('hidden')};
+$$('#menuAlpha [data-bg]').forEach(b=>b.onclick=()=>{setBg(b.dataset.bg);$('#menuAlpha').classList.add('hidden');commitD()});
+$('#btnGen').onclick=e=>{e.stopPropagation();$('#menuGen').classList.toggle('hidden');$('#menuAlpha').classList.add('hidden')};
+document.addEventListener('click',()=>{$('#menuGen').classList.add('hidden');$('#menuAlpha').classList.add('hidden')});
+$('#btnGrid').onclick=()=>{S.grid=!S.grid;$('#gridOv').classList.toggle('hidden',!S.grid);$('#btnGrid').classList.toggle('text-amber-400',S.grid)};
+$('#btnOpt').onclick=()=>{S.optimal=!S.optimal;applySettings()};
+$('#btnGuide').onclick=()=>openM('m-guide');
+$('#ffCopy').onclick=()=>{navigator.clipboard.writeText($('#ffcmd').textContent);toast('Perintah disalin')};
+$('#btnLic').onclick=()=>openM('m-lic');
+
+/* ================= PLAYER ================= */
+function setPlay(p){S.playing=p;$('#btnPlay').innerHTML=p?'<i class="fa-solid fa-pause mr-1"></i> PAUSE':'<i class="fa-solid fa-play mr-1"></i> PLAY'}
+$('#btnPlay').onclick=()=>setPlay(!S.playing);
+$('#btnReplay').onclick=()=>{S.t=0;setPlay(true)};
+$('#seek').onclick=e=>{const r=e.currentTarget.getBoundingClientRect();S.t=Math.max(0,Math.min(0.9999,(e.clientX-r.left)/r.width))*S.dur};
+let last=performance.now();
+function loop(now){
+  const dt=Math.min(0.1,(now-last)/1000);last=now;
+  if(!recording){
+    if(S.playing){S.t+=dt;if(S.t>=S.dur)S.t=0}
+    if(S.mode==='svg')setAnimTime(S.t);
+    renderFrame(cv,S.t);
+    $('#seekBar').style.width=(S.t/S.dur*100)+'%';
+    $('#timeLbl').textContent=S.t.toFixed(2)+'s / '+S.dur+'s';
+  }
+  requestAnimationFrame(loop);
+}
+
+/* ================= TABS ================= */
+function syncTop(){$$('.toptab').forEach(b=>b.classList.toggle('on',curRt==='layer'?b.dataset.top==='layer':b.dataset.top===S.mode))}
+function setTop(n){
+  if(n==='code'){openTerm();return}
+  if(n==='canvas'||n==='svg'){S.mode=n;applyMode();syncEditor();log('Mode: '+n.toUpperCase());commitD();if(curRt==='layer')setRt('config')}
+  if(n==='layer')setRt('layer');
+  syncTop();
+}
+$$('[data-top]').forEach(b=>b.onclick=()=>setTop(b.dataset.top));
+function setRt(n){
+  curRt=n;
+  ['config','assets','cover','logs','layer'].forEach(k=>$('#p-'+k).classList.toggle('hidden',k!==n));
+  $$('.rtab').forEach(b=>b.classList.toggle('on',b.dataset.rt===n));
+  if(n==='cover')renderCover();if(n==='logs')renderLogs();
+  syncTop();
+}
+$$('[data-rt]').forEach(b=>b.onclick=()=>setRt(b.dataset.rt));
+
+/* ================= EDITOR ================= */
+function syncEditor(){
+  const svg=S.mode==='svg';
+  $('#codeArea').value=svg?S.svg:S.code;
+  $('#edTitle').textContent=svg?'Editor SVG Motion':'Editor Kode JS (Canvas)';
+  $('#edHint').innerHTML=svg?'SVG dengan animasi <b>CSS @keyframes</b> (sinkron dengan timeline &amp; export). Pakai viewBox. Buat loop mulus: durasi animasi harus habis membagi durasi video.'
+   :'Body fungsi dengan argumen: <code class="text-amber-400">ctx, t, w, h, P{hue,speed}, assets, rnd(i,k), ph(periode), D</code>. Pakai <code class="text-amber-400">ph(8)</code> (fase 0..1 yang loop mulus) agar video bisa di-loop.';
+}
+function openTerm(){syncEditor();openM('m-term')}
+function runEditor(){
+  const v=$('#codeArea').value;
+  if(S.mode==='svg'){S.svg=v;S.theme='Custom';setSvg();log('SVG diperbarui','ok');toast('SVG dijalankan');commitD()}
+  else{
+    if(/^\s*<(svg|\?xml|!)/i.test(v)){toast('Ini kode SVG. Klik tab SVG MOTION dulu.');log('Kode SVG ditempel di mode Canvas. Pindah ke tab SVG MOTION.','warn');return}
+    S.code=v;S.theme='Custom';if(compile()){toast('Kode dijalankan');commitD()}
+  }
+}
+$('#btnTerm').onclick=openTerm;$('#btnOpenTerm').onclick=openTerm;
+$('#edRun').onclick=runEditor;
+$('#edReset').onclick=()=>{
+  if(S.mode==='svg'){S.svg=SVGS[S.theme]||SVGS['Natal'];setSvg()}
+  else{S.code=srcOf(PRESETS[S.preset]||PRESETS['Partikel']);compile()}
+  syncEditor();commitD();
+};
+$('#codeArea').addEventListener('keydown',e=>{
+  if(e.key==='Tab'){e.preventDefault();const a=e.target,s=a.selectionStart;a.value=a.value.slice(0,s)+'  '+a.value.slice(a.selectionEnd);a.selectionStart=a.selectionEnd=s+2}
+  if(e.ctrlKey&&e.key==='Enter'){e.preventDefault();runEditor()}
+});
+$('#edExport').onclick=openExport;
+$('#edPng').onclick=async()=>{
+  if(recording)return;recording=true;
+  try{const [w,h]=dims(),c=document.createElement('canvas');c.width=w;c.height=h;
+    await renderAt(c,S.t,BGS[S.bg][2]||null);
+    c.toBlob(b=>{dl(b,`frame_${w}x${h}.png`);log('PNG frame disimpan','ok')})}
+  catch(e){log('PNG gagal: '+e.message,'err')}
+  recording=false;
+};
+
+/* ================= GENERATORS / TEMA / PROMPT ================= */
+function loadPreset(n,hue){
+  S.preset=n;S.theme=n;S.mode='canvas';S.code=srcOf(PRESETS[n]);S.P={hue:hue??HUE[n],speed:1};
+  compile();applyMode();syncParams();syncEditor();syncTop();log('Generator: '+n,'ok');commitD();
+}
+function loadSvg(n){
+  S.theme=n;S.mode='svg';S.svg=SVGS[n];setSvg();applyMode();syncEditor();syncTop();log('Tema SVG: '+n,'ok');commitD();
+}
+function loadSeason(name){const [type,key]=SEASONS[name];type==='svg'?loadSvg(key):loadPreset(key);toast('Tema: '+name)}
+$('#menuGen').innerHTML=Object.keys(PRESETS).map(n=>`<button data-pr="${n}"><i class="fa-solid fa-bolt text-amber-400 mr-2"></i>${n}</button>`).join('');
+$$('#menuGen [data-pr]').forEach(b=>b.onclick=()=>{loadPreset(b.dataset.pr);toast('Generator: '+b.dataset.pr)});
+$('#seasonGrid').innerHTML=Object.keys(SEASONS).map(n=>`<button class="opt" data-season="${n}">${n}</button>`).join('');
+$$('[data-season]').forEach(b=>b.onclick=()=>loadSeason(b.dataset.season));
+
+const EX=['partikel emas cepat','gelombang biru lambat','matrix hijau','bintang ungu "COSMOS"','natal','ramadan','halloween','tahun baru cepat "2027"','valentine pink "LOVE"'];
+$('#promptChips').innerHTML=EX.map(x=>`<button class="opt" style="padding:.25rem .5rem">${x}</button>`).join('');
+$$('#promptChips button').forEach(b=>b.onclick=()=>$('#promptIn').value=b.textContent);
+$('#btnPrompt').onclick=()=>{openM('m-prompt');setTimeout(()=>$('#promptIn').focus(),50)};
+$('#promptGo').onclick=()=>{
+  const raw=$('#promptIn').value,p=raw.toLowerCase();if(!p.trim())return toast('Tulis prompt dulu');
+  const has=(...k)=>k.some(x=>p.includes(x));
+  let n='Partikel',season=null;
+  if(has('natal','christmas','xmas'))season='Natal';
+  else if(has('ramadan','lebaran','idul','puasa','ied'))season='Ramadan';
+  else if(has('halloween','hantu'))season='Halloween';
+  else if(has('tahun baru','kembang api','firework','new year'))n='Kembang Api';
+  else if(has('valentine','cinta','love','hati'))n='Hati Cinta';
+  else if(has('gelombang','wave','ombak'))n='Gelombang';
+  else if(has('matrix','hacker'))n='Matrix';
+  else if(has('bintang','star','galaxy','space','angkasa'))n='Bintang';
+  else if(has('aura','gradient','bokeh','blur'))n='Aura';
+  else if(has('grid','neon','retro','synthwave'))n='Grid Neon';
+  if(season)loadSvg(season);
+  else{
+    let hue=HUE[n];
+    const cm=[[['merah','red'],0],[['oranye','orange','emas','gold','kuning','yellow'],40],[['hijau','green'],130],[['cyan','tosca'],180],[['biru','blue'],215],[['ungu','violet','purple'],270],[['pink','magenta'],320]];
+    for(const [k,v] of cm)if(has(...k)){hue=v;break}
+    loadPreset(n,hue);
+    S.P.speed=has('cepat','fast')?2:has('lambat','slow')?0.5:1;syncParams();
+  }
+  const m=raw.match(/["“](.+?)["”]/);
+  if(m){S.layers.push({id:Date.now(),type:'text',text:m[1],color:'#ffffff',x:50,y:50,size:10,anim:'pulse',asset:''});renderLayers()}
+  closeM();toast('Dibuat: '+(season||n));log(`Prompt AI → ${season||n}`,'ok');commitD();
+};
+
+/* ================= LAYERS ================= */
+function addLayer(type,extra={}){S.layers.push(Object.assign({id:Date.now()+Math.random(),type,text:'TEKS',color:'#ffffff',x:50,y:50,size:10,anim:'none',asset:''},extra));renderLayers();commitD()}
+$$('[data-addlayer]').forEach(b=>b.onclick=()=>addLayer(b.dataset.addlayer));
+function renderLayers(){
+  const box=$('#layerList');box.innerHTML='';
+  if(!S.layers.length)box.innerHTML='<p class="text-gray-500 text-[11px]">Belum ada layer. Tambah teks / bentuk di atas.</p>';
+  S.layers.forEach((L,i)=>{
+    const d=document.createElement('div');d.className='bg-[#181c24] border border-gray-800 rounded-xl p-2.5 space-y-2';
+    d.innerHTML=`<div class="flex justify-between items-center"><b class="text-amber-400 uppercase text-[10px]">${L.type} #${i+1}</b><button class="text-red-400 hover:text-red-300" data-del><i class="fa-solid fa-trash"></i></button></div>
+    ${L.type==='text'?`<input class="ipt" data-k="text" value="${String(L.text).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;')}">`:''}
+    <div class="flex gap-2"><input type="color" data-k="color" value="${L.color}" class="h-8 w-12 bg-transparent">
+    <select class="ipt" data-k="anim">${['none','fade','pulse','spin','slide','float'].map(a=>`<option ${a===L.anim?'selected':''}>${a}</option>`).join('')}</select></div>
+    <label class="block text-[10px] text-gray-500">X <input type="range" data-k="x" min="0" max="100" value="${L.x}" class="w-full"></label>
+    <label class="block text-[10px] text-gray-500">Y <input type="range" data-k="y" min="0" max="100" value="${L.y}" class="w-full"></label>
+    <label class="block text-[10px] text-gray-500">Ukuran <input type="range" data-k="size" min="1" max="80" value="${L.size}" class="w-full"></label>`;
+    d.querySelectorAll('[data-k]').forEach(el=>el.oninput=()=>{L[el.dataset.k]=el.type==='range'?+el.value:el.value;commitD()});
+    d.querySelector('[data-del]').onclick=()=>{S.layers.splice(i,1);renderLayers();commitD()};
+    box.appendChild(d);
+  });
+}
+
+/* ================= ASSETS ================= */
+function addAsset(name,dataUrl){const im=new Image();im.src=dataUrl;S.assets[name]=dataUrl;S.assetImgs[name]=im}
+$('#fileAsset').onchange=e=>{
+  [...e.target.files].forEach(f=>{const r=new FileReader();r.onload=()=>{addAsset(f.name,r.result);renderAssets();log('Asset ditambah: '+f.name,'ok')};r.readAsDataURL(f)});
+  e.target.value='';
+};
+function renderAssets(){
+  const box=$('#assetList');box.innerHTML=Object.keys(S.assets).length?'':'<p class="text-gray-500 text-[11px]">Belum ada asset.</p>';
+  Object.keys(S.assets).forEach(n=>{
+    const d=document.createElement('div');d.className='flex items-center gap-2 bg-[#181c24] border border-gray-800 rounded-lg p-2';
+    d.innerHTML=`<img src="${S.assets[n]}" class="w-10 h-10 object-cover rounded"><span class="flex-1 truncate">${n.replace(/</g,'&lt;')}</span>
+    <button class="px-2 py-1 bg-indigo-600 rounded" data-l>Layer</button><button class="text-red-400" data-d><i class="fa-solid fa-trash"></i></button>`;
+    d.querySelector('[data-l]').onclick=()=>{addLayer('image',{asset:n,size:25});toast('Ditambah sebagai layer')};
+    d.querySelector('[data-d]').onclick=()=>{delete S.assets[n];delete S.assetImgs[n];S.layers=S.layers.filter(l=>l.asset!==n);renderAssets();renderLayers();commitD()};
+    box.appendChild(d);
+  });
+}
+
+/* ================= COVER ================= */
+async function renderCover(){
+  const c=$('#cvCover'),x=c.getContext('2d'),st=$('#cvStyle').value;
+  const tmp=document.createElement('canvas');tmp.width=1280;tmp.height=720;
+  try{await renderAt(tmp,S.t)}catch(e){log('Cover: '+e.message,'err')}
+  x.clearRect(0,0,1280,720);
+  if(st==='dark'){x.fillStyle='#0a0c0f';x.fillRect(0,0,1280,720)}
+  if(st==='gold'){const g=x.createLinearGradient(0,0,1280,720);g.addColorStop(0,'#f59e0b');g.addColorStop(1,'#7c2d12');x.fillStyle=g;x.fillRect(0,0,1280,720)}
+  x.drawImage(tmp,0,0);
+  x.textAlign='center';x.fillStyle='#fff';x.shadowColor='#000';x.shadowBlur=20;
+  x.font='800 84px system-ui';x.fillText($('#cvTitle').value,640,360);
+  x.font='500 36px system-ui';x.fillStyle='#fbbf24';x.fillText($('#cvSub').value,640,420);x.shadowBlur=0;
+}
+['#cvTitle','#cvSub','#cvStyle'].forEach(s=>$(s).oninput=renderCover);
+$('#btnCoverGen').onclick=renderCover;
+$('#btnCoverDl').onclick=async()=>{await renderCover();$('#cvCover').toBlob(b=>{dl(b,'cover.png');log('Cover disimpan','ok')})};
+
+/* ================= LOGS ================= */
+$('#btnLogClear').onclick=()=>{LOGS.length=0;renderLogs()};
+$('#btnLogCopy').onclick=()=>{navigator.clipboard.writeText(LOGS.map(l=>`[${l.t}] ${l.m}`).join('\n'));toast('Log disalin')};
+
+/* ================= EXPORT OFFLINE ================= */
+function openExport(){closeM();exInfo();exNote();openM('m-export')}
+function exInfo(){const [w,h]=dims();$('#exInfo').textContent=`${w}x${h} • ${S.fps} fps • ${S.dur} detik • ${Math.round(S.dur*S.fps)} frame • background: ${BGS[S.bg][0]}`}
+function exNote(){
+  const f=$('#exFmt').value;
+  $('#exNote').textContent=f==='webm'?'Render frame-demi-frame (bukan real-time), jadi durasi selalu tepat. Alpha dipakai jika browser mendukung (dicek otomatis). Jika background bukan Alpha, warnanya dipakai sebagai latar.'
+   :f==='png'?'Satu PNG per frame dengan alpha penuh, dibagi beberapa ZIP bila besar. Ekstrak semua ke satu folder lalu konversi dengan ffmpeg (lihat PANDUAN MOV ALPHA).'
+   :'MP4 tidak mendukung transparansi: latar Alpha diganti hitam (atau warna background yang dipilih).';
+}
+$('#exFmt').onchange=exNote;
+$('#btnExportOpen').onclick=openExport;
+$('#exCancel').onclick=()=>{cancelFlag=true};
+
+async function encodeVideo(fmt,prog){
+  if(typeof VideoEncoder==='undefined')throw new Error('Browser tidak mendukung WebCodecs. Pakai Chrome/Edge terbaru, atau export PNG Sequence.');
+  const [w,h]=dims(),fps=S.fps,N=Math.round(S.dur*fps);
+  const bgc=BGS[S.bg][2]||null,bgFill=bgc||(fmt==='mp4'?'#000000':null);
+  const bitrate=BR[S.res]*1e6;
+  let cfg,finish,muxer,alpha=false;
+  if(fmt==='webm'){
+    if(typeof WebMMuxer==='undefined')throw new Error('Library WebM muxer gagal dimuat (cek internet)');
+    cfg={codec:(w*h<=2228224)?'vp09.00.41.08':'vp09.00.51.08',width:w,height:h,bitrate,framerate:fps};
+    if(!bgFill){
+      const s=await VideoEncoder.isConfigSupported({...cfg,alpha:'keep'});
+      if(s.supported&&s.config&&s.config.alpha==='keep'){cfg.alpha='keep';alpha=true}
+      else log('Encoder browser ini tidak mendukung alpha. Untuk alpha pasti pakai PNG Sequence.','warn');
+    }
+    const s2=await VideoEncoder.isConfigSupported(cfg);
+    if(!s2.supported)throw new Error(`VP9 tidak didukung untuk ${w}x${h}`);
+    const vopt={codec:'V_VP9',width:w,height:h,frameRate:fps,alpha};
+    if(WebMMuxer.Muxer){const tg=new WebMMuxer.ArrayBufferTarget();muxer=new WebMMuxer.Muxer({target:tg,video:vopt});finish=()=>{muxer.finalize();return tg.buffer}}
+    else{muxer=new WebMMuxer({target:'buffer',video:vopt});finish=()=>{const r=muxer.finalize();return(r&&r.byteLength!==undefined)?r:muxer.target.buffer}}
+  }else{
+    if(typeof Mp4Muxer==='undefined')throw new Error('Library MP4 muxer gagal dimuat (cek internet)');
+    let codec=null;
+    for(const c of ['avc1.640034','avc1.640033','avc1.64002A','avc1.4D0034','avc1.42E01F']){
+      const s=await VideoEncoder.isConfigSupported({codec:c,width:w,height:h,bitrate,framerate:fps});
+      if(s.supported){codec=c;break}
+    }
+    if(!codec)throw new Error(`H.264 tidak didukung untuk ${w}x${h}`);
+    cfg={codec,width:w,height:h,bitrate,framerate:fps};
+    const tg=new Mp4Muxer.ArrayBufferTarget();
+    muxer=new Mp4Muxer.Muxer({target:tg,video:{codec:'avc',width:w,height:h},fastStart:'in-memory'});
+    finish=()=>{muxer.finalize();return tg.buffer};
+  }
+  let encErr=null;
+  const enc=new VideoEncoder({output:(ch,meta)=>muxer.addVideoChunk(ch,meta),error:e=>{encErr=e}});
+  enc.configure(cfg);
+  const c=document.createElement('canvas');c.width=w;c.height=h;
+  try{
+    for(let i=0;i<N;i++){
+      if(cancelFlag)throw new Error('Dibatalkan');
+      if(encErr)throw encErr;
+      await renderAt(c,i/fps,bgFill);
+      const f=new VideoFrame(c,{timestamp:Math.round(i*1e6/fps),duration:Math.round(1e6/fps)});
+      enc.encode(f,{keyFrame:i%(fps*2)===0});f.close();
+      while(enc.encodeQueueSize>6){if(encErr)throw encErr;await yieldUI()}
+      if(i%3===0){prog(i/N);await yieldUI()}
+    }
+    await enc.flush();
+    if(encErr)throw encErr;
+  }finally{try{if(enc.state!=='closed')enc.close()}catch(e){}}
+  prog(1);
+  return new Blob([finish()],{type:fmt==='webm'?'video/webm':'video/mp4'});
+}
+async function exportPngSeq(prog){
+  if(typeof JSZip==='undefined')throw new Error('JSZip gagal dimuat (cek internet)');
+  const [w,h]=dims(),fps=S.fps,N=Math.round(S.dur*fps),bgFill=BGS[S.bg][2]||null;
+  const per=w*h>3e6?100:w*h>1.2e6?200:300;
+  const c=document.createElement('canvas');c.width=w;c.height=h;
+  let zip=new JSZip(),part=1,cnt=0;
+  const flush=async()=>{
+    if(!cnt)return;
+    const b=await zip.generateAsync({type:'blob',compression:'STORE'});
+    dl(b,`frames_part${String(part).padStart(2,'0')}.zip`);log(`ZIP part ${part} (${cnt} frame) diunduh`,'ok');
+    part++;zip=new JSZip();cnt=0;await new Promise(r=>setTimeout(r,400));
+  };
+  for(let i=0;i<N;i++){
+    if(cancelFlag)throw new Error('Dibatalkan');
+    await renderAt(c,i/fps,bgFill);
+    const blob=await new Promise(r=>c.toBlob(r,'image/png'));
+    zip.file(`frame_${String(i).padStart(5,'0')}.png`,blob);cnt++;
+    if(cnt>=per)await flush();
+    if(i%3===0){prog(i/N);await yieldUI()}
+  }
+  await flush();prog(1);
+}
+$('#exGo').onclick=async()=>{
+  if(recording)return;
+  const fmt=$('#exFmt').value;recording=true;cancelFlag=false;
+  const t0=performance.now();
+  $('#exWrap').classList.remove('hidden');$('#exGo').disabled=true;$('#exLoopRes').textContent='';
+  const prog=p=>{const pc=Math.round(p*100);$('#exBar').style.width=pc+'%';const el=(performance.now()-t0)/1000,eta=p>0.03?el/p*(1-p):0;
+    $('#exLbl').textContent=`Merender ${pc}%`+(eta?` • sisa ±${Math.ceil(eta)} dtk`:'')};
+  log('Mulai export '+fmt.toUpperCase(),'warn');
+  try{
+    if(fmt==='png')await exportPngSeq(prog);
+    else{const b=await encodeVideo(fmt,prog),[w,h]=dims();dl(b,`motion_${w}x${h}_${S.fps}fps.${fmt}`);log(`Export selesai: ${(b.size/1e6).toFixed(1)} MB`,'ok')}
+    toast('Export selesai');
+  }catch(e){log('Export gagal: '+e.message,'err');toast('Export gagal: '+e.message)}
+  recording=false;$('#exGo').disabled=false;$('#exWrap').classList.add('hidden');$('#exBar').style.width='0%';
+};
+$('#exLoop').onclick=async()=>{
+  if(recording)return;recording=true;$('#exLoopRes').textContent='Memeriksa...';
+  try{
+    const [W,H]=dims(),k=320/Math.max(W,H),c=document.createElement('canvas');c.width=Math.round(W*k);c.height=Math.round(H*k);
+    const x=c.getContext('2d',{willReadFrequently:true});
+    await renderAt(c,0);const a=x.getImageData(0,0,c.width,c.height).data;
+    await renderAt(c,S.dur);const b=x.getImageData(0,0,c.width,c.height).data;
+    let d=0;for(let i=0;i<a.length;i++)d+=Math.abs(a[i]-b[i]);
+    const pct=d/a.length/255*100;
+    $('#exLoopRes').innerHTML=pct<0.4?`<span class="text-emerald-400">Loop mulus (selisih ${pct.toFixed(2)}%).</span>`
+      :`<span class="text-amber-400">Ada lompatan di sambungan (selisih ${pct.toFixed(2)}%). Pastikan durasi tiap animasi CSS habis membagi ${S.dur} detik, atau ganti durasi video.</span>`;
+  }catch(e){$('#exLoopRes').textContent='Gagal: '+e.message}
+  recording=false;
+};
+
+/* ================= METADATA MICROSTOCK ================= */
+const KW={
+ 'Natal':'christmas,xmas,tree,snow,winter,holiday,festive,lights,gift,december,celebration',
+ 'Ramadan':'ramadan,kareem,islamic,lantern,fanous,crescent,moon,mosque,eid,mubarak,muslim,celebration',
+ 'Halloween':'halloween,pumpkin,bats,ghost,spooky,october,moon,night,horror,scary,celebration',
+ 'Kembang Api':'new year,fireworks,celebration,party,night,sparkle,explosion,festive,countdown',
+ 'Hati Cinta':'valentine,love,hearts,romantic,romance,pink,wedding,celebration,floating hearts',
+ 'Partikel':'particles,glow,bokeh,sparkle,dust,floating,abstract,background',
+ 'Gelombang':'waves,lines,abstract,flow,smooth,background,energy',
+ 'Matrix':'matrix,code,digital,hacker,cyber,technology,data,rain',
+ 'Bintang':'stars,space,galaxy,warp,travel,universe,hyperspace',
+ 'Aura':'gradient,aura,glow,blur,soft,abstract,colorful,background',
+ 'Grid Neon':'neon,grid,synthwave,retro,80s,futuristic,cyber,landscape'
+};
+$('#mtGen').onclick=()=>{
+  const [w,h]=dims(),th=S.theme,alpha=S.bg==='alpha';
+  const name=$('#mtTitle').value.trim()||`${th==='Custom'?'Abstract':th} Animated Background Loop`;
+  const kw=((KW[th]||'abstract,background,animation,glow')+',seamless loop,motion graphics,animation,overlay,'+(alpha?'alpha channel,transparent,':'')+`${S.res>=2160?'4k':S.res>=1080?'full hd':'hd'},video`).split(',');
+  $('#mtOut').value=`TITLE:\n${name}\n\nDESCRIPTION:\n${name}. ${w}x${h}, ${S.fps} fps, ${S.dur} seconds, seamless loop${alpha?', transparent alpha channel':''}. Motion graphics animation ready for video editing, overlays, social media and presentations.\n\nKEYWORDS:\n${[...new Set(kw)].join(', ')}`;
+};
+$('#mtCopy').onclick=()=>{navigator.clipboard.writeText($('#mtOut').value);toast('Metadata disalin')};
+
+/* ================= BULK ZIP (offline) ================= */
+const BULK_ITEMS=[...Object.keys(PRESETS),...Object.keys(SVGS)];
+$('#bulkList').innerHTML=BULK_ITEMS.map(n=>`<label class="flex items-center gap-2 bg-[#181c24] border border-gray-800 rounded-lg p-2"><input type="checkbox" checked value="${n}"> ${n}</label>`).join('');
+$('#btnBulk').onclick=()=>openM('m-bulk');
+function applyItem(n){
+  if(PRESETS[n]){S.mode='canvas';S.preset=n;S.theme=n;S.code=srcOf(PRESETS[n]);S.P={hue:HUE[n],speed:1};compile()}
+  else{S.mode='svg';S.theme=n;S.svg=SVGS[n];setSvg()}
+  applyMode();
+}
+$('#bulkGo').onclick=async()=>{
+  if(recording)return;
+  if(typeof JSZip==='undefined')return toast('JSZip gagal dimuat (cek internet)');
+  const sel=$$('#bulkList input:checked').map(i=>i.value);if(!sel.length)return toast('Pilih minimal 1 tema');
+  recording=true;cancelFlag=false;$('#bulkWrap').classList.remove('hidden');$('#bulkGo').disabled=true;
+  const backup=snapshot(),zip=new JSZip(),[w,h]=dims();
+  try{
+    for(let i=0;i<sel.length;i++){
+      applyItem(sel[i]);await yieldUI();
+      $('#bulkLbl').textContent=`Merender ${sel[i]} (${i+1}/${sel.length})...`;
+      const b=await encodeVideo('webm',p=>$('#bulkBar').style.width=(((i+p)/sel.length)*100)+'%');
+      zip.file(`${sel[i].replace(/\s/g,'_')}_${w}x${h}_${S.fps}fps.webm`,b);
+    }
+    $('#bulkLbl').textContent='Membuat ZIP...';
+    dl(await zip.generateAsync({type:'blob',compression:'STORE'}),'motion_bulk.zip');log('Bulk ZIP selesai','ok');toast('ZIP selesai');
+  }catch(e){log('Bulk gagal: '+e.message,'err');toast('Bulk gagal: '+e.message)}
+  restore(backup);
+  recording=false;$('#bulkGo').disabled=false;$('#bulkWrap').classList.add('hidden');$('#bulkBar').style.width='0%';
+};
+
+/* ================= PROYEK: undo/redo/simpan/buka ================= */
+function snapshot(){return JSON.stringify({mode:S.mode,ratio:S.ratio,res:S.res,fps:S.fps,dur:S.dur,bg:S.bg,P:S.P,code:S.code,svg:S.svg,layers:S.layers,preset:S.preset,theme:S.theme})}
+function restore(j){
+  const o=JSON.parse(j);
+  Object.assign(S,{mode:o.mode,ratio:o.ratio,res:o.res,fps:o.fps,dur:o.dur,bg:o.bg,P:o.P,code:o.code,svg:o.svg,layers:o.layers||[],preset:o.preset,theme:o.theme});
+  compile();setSvg();applySettings();setBg(S.bg);applyMode();renderLayers();syncEditor();syncParams();syncTop();
+}
+const HS={u:[],r:[],cur:''};
+function commit(){
+  const s=snapshot();if(s===HS.cur)return;
+  HS.u.push(HS.cur);if(HS.u.length>60)HS.u.shift();HS.cur=s;HS.r=[];
+  try{localStorage.setItem('motionstudio.v2',s)}catch(e){}
+}
+const commitD=debounce(commit,400);
+function undo(){commit();if(!HS.u.length)return toast('Tidak ada yang di-undo');HS.r.push(HS.cur);HS.cur=HS.u.pop();restore(HS.cur)}
+function redo(){if(!HS.r.length)return toast('Tidak ada yang di-redo');HS.u.push(HS.cur);HS.cur=HS.r.pop();restore(HS.cur)}
+$('#pjUndo').onclick=undo;$('#pjRedo').onclick=redo;
+$('#pjSave').onclick=()=>{commit();dl(new Blob([JSON.stringify({v:2,state:JSON.parse(snapshot()),assets:S.assets})],{type:'application/json'}),'proyek_motion.json');log('Proyek disimpan','ok')};
+$('#pjOpen').onchange=e=>{
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{try{
+    const o=JSON.parse(r.result);S.assets={};S.assetImgs={};
+    Object.entries(o.assets||{}).forEach(([n,u])=>addAsset(n,u));
+    restore(JSON.stringify(o.state));renderAssets();commit();toast('Proyek dibuka');log('Proyek dibuka: '+f.name,'ok');
+  }catch(err){toast('File proyek tidak valid');log('Buka proyek gagal: '+err.message,'err')}};
+  r.readAsText(f);e.target.value='';
+};
+$('#pjReset').onclick=()=>{if(confirm('Hapus semua pengaturan tersimpan dan mulai ulang?')){try{localStorage.removeItem('motionstudio.v2')}catch(e){}location.reload()}};
+
+/* ================= HOTKEY ================= */
+document.addEventListener('keydown',e=>{
+  const typing=/INPUT|TEXTAREA|SELECT/.test(e.target.tagName);
+  if(e.key==='Escape')closeM();
+  if(e.code==='Space'&&!typing){e.preventDefault();setPlay(!S.playing)}
+  if(e.ctrlKey&&!typing&&e.key.toLowerCase()==='z'){e.preventDefault();undo()}
+  if(e.ctrlKey&&!typing&&e.key.toLowerCase()==='y'){e.preventDefault();redo()}
+});
+
+/* ================= INIT ================= */
+S.code=srcOf(PRESETS['Partikel']);
+try{const saved=localStorage.getItem('motionstudio.v2');if(saved){const o=JSON.parse(saved);if(o&&o.code&&o.svg)Object.assign(S,{mode:o.mode,ratio:o.ratio,res:o.res,fps:o.fps,dur:o.dur,bg:o.bg,P:o.P,code:o.code,svg:o.svg,layers:o.layers||[],preset:o.preset,theme:o.theme})}}catch(e){}
+compile();setSvg();applySettings();setBg(S.bg);applyMode();renderLayers();renderAssets();syncEditor();syncParams();syncTop();
+HS.cur=snapshot();
+log('Motion Studio siap. Semua fitur terbuka.','ok');
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
