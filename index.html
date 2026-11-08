@@ -2,7 +2,8 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0d0f12">
 <title>Motion Studio</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -10,7 +11,8 @@
 <script src="https://cdn.jsdelivr.net/npm/webm-muxer@5/build/webm-muxer.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/mp4-muxer@5/build/mp4-muxer.js"></script>
 <style>
-body{background:#0d0f12;color:#e2e8f0;font-family:system-ui,-apple-system,sans-serif}
+html,body{height:100%}
+body{background:#0d0f12;color:#e2e8f0;font-family:system-ui,-apple-system,sans-serif;height:100vh;height:100dvh;-webkit-tap-highlight-color:transparent;overscroll-behavior:none}
 .opt{background:#181c24;color:#9ca3af;border:1px solid #1f2937;border-radius:.5rem;padding:.4rem .25rem;transition:.15s}
 .opt:hover{color:#fff;border-color:#4b5563}
 .opt.on{background:#4f46e5;color:#fff;font-weight:700;border-color:#4f46e5}
@@ -18,77 +20,97 @@ body{background:#0d0f12;color:#e2e8f0;font-family:system-ui,-apple-system,sans-s
 .preset{background:#12151a;border:1px solid #374151;border-radius:.5rem;padding:.5rem;text-align:left}
 .preset.on{background:#1d2330;border-color:#f59e0b}
 .preset.on .pt{color:#fbbf24}
-.toptab{padding:.375rem .75rem;font-size:.75rem;font-weight:600;border-radius:.5rem;color:#9ca3af}
+.toptab{padding:.375rem .75rem;font-size:.75rem;font-weight:600;border-radius:.5rem;color:#9ca3af;white-space:nowrap}
 .toptab:hover{color:#fff}
 .toptab.on{background:#f59e0b;color:#000}
 .rtab{flex:1;padding:.75rem 0;text-align:center;border-bottom:2px solid transparent;color:#9ca3af}
 .rtab:hover{color:#fff}
 .rtab.on{border-color:#6366f1;color:#fff;background:#181c24}
 .checker{background-color:#050608;background-image:radial-gradient(#11141c 1px,transparent 1px);background-size:16px 16px}
-.menu{position:absolute;z-index:40;background:#181c24;border:1px solid #374151;border-radius:.75rem;padding:.25rem;min-width:170px;box-shadow:0 10px 30px #000a}
-.menu button{display:block;width:100%;text-align:left;padding:.4rem .6rem;font-size:.75rem;border-radius:.5rem;color:#d1d5db}
+.menu{position:absolute;z-index:40;background:#181c24;border:1px solid #374151;border-radius:.75rem;padding:.25rem;min-width:180px;box-shadow:0 10px 30px #000a}
+.menu button{display:block;width:100%;text-align:left;padding:.55rem .7rem;font-size:.8rem;border-radius:.5rem;color:#d1d5db}
 .menu button:hover{background:#252e40;color:#fff}
 .ipt{background:#0d0f12;border:1px solid #374151;border-radius:.5rem;padding:.4rem .6rem;width:100%;color:#e2e8f0;font-size:.75rem}
 .ipt:focus{outline:none;border-color:#f59e0b}
 button:disabled{opacity:.5;cursor:not-allowed}
+.hb{padding:.45rem .6rem;font-size:.75rem;font-weight:600;border-radius:.5rem;white-space:nowrap}
+.sheet{width:100%;max-height:92vh;max-height:92dvh;display:flex;flex-direction:column;background:#12151a;border:1px solid #374151;border-radius:1rem 1rem 0 0;padding-bottom:env(safe-area-inset-bottom)}
+.scrollx{overflow-x:auto;scrollbar-width:none}
+.scrollx::-webkit-scrollbar{display:none}
+#seek{touch-action:none}
+@media (min-width:640px){.sheet{border-radius:1rem;max-height:90vh;max-height:90dvh}}
+@media (min-width:1024px){.hb{padding:.375rem .75rem}}
+@media (max-width:1023px){
+  .ipt,#codeArea{font-size:16px}
+  .rtab{padding:.65rem 0}
+}
+@media (pointer:coarse){
+  .opt,.preset{min-height:42px}
+  .toptab{min-height:38px}
+  .hb{min-height:38px;min-width:38px}
+}
 </style>
 </head>
-<body class="flex flex-col h-screen overflow-hidden">
+<body class="flex flex-col overflow-hidden">
 
-<!-- NAVBAR -->
-<header class="flex items-center justify-between px-4 py-2.5 bg-[#12151a] border-b border-gray-800 relative z-30">
-  <div class="flex items-center space-x-3">
+<!-- HEADER -->
+<header class="flex flex-wrap items-center justify-between gap-x-2 gap-y-2 px-2 lg:px-4 py-2 bg-[#12151a] border-b border-gray-800 relative z-30">
+  <div class="flex items-center space-x-2 lg:space-x-3 order-1">
     <div class="bg-gradient-to-r from-amber-500 to-orange-600 p-2 rounded-lg text-black font-bold flex items-center justify-center"><i class="fa-solid fa-video text-sm"></i></div>
-    <div>
-      <span class="font-extrabold tracking-wider text-white">MOTION <span class="text-amber-500">STUDIO</span></span>
+    <div class="hidden sm:block leading-tight">
+      <span class="font-extrabold tracking-wider text-white text-sm lg:text-base">MOTION <span class="text-amber-500">STUDIO</span></span>
       <span class="block text-[9px] text-gray-400 tracking-widest">TURBO GPU ENGINE</span>
     </div>
   </div>
-  <div class="flex items-center space-x-2 bg-[#181c24] p-1 rounded-xl border border-gray-800">
-    <button class="toptab on" data-top="canvas">CANVAS</button>
-    <button class="toptab" data-top="svg">SVG MOTION <i class="fa-solid fa-lock-open text-[10px] ml-1 text-emerald-400"></i></button>
-    <button class="toptab" data-top="code"><i class="fa-solid fa-code mr-1"></i> KODE JS</button>
-    <button class="toptab" data-top="layer">VISUAL LAYER</button>
-  </div>
-  <div class="flex items-center space-x-2">
-    <button id="btnTerm" class="px-3 py-1.5 text-xs font-medium bg-[#1d2330] hover:bg-[#252e40] text-blue-400 border border-blue-900/50 rounded-lg"><i class="fa-solid fa-terminal mr-1"></i> TERMINAL EDITOR</button>
-    <button id="btnPrompt" class="px-3 py-1.5 text-xs font-semibold bg-gradient-to-r from-amber-500 to-orange-500 text-black rounded-lg"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i> PROMPT AI</button>
-    <div class="relative">
-      <button id="btnGen" class="px-3 py-1.5 text-xs font-medium bg-[#1d2330] hover:bg-[#252e40] text-gray-300 border border-gray-700 rounded-lg">AI GENERATORS <i class="fa-solid fa-chevron-down text-[10px] ml-1"></i></button>
-      <div id="menuGen" class="menu hidden right-0 top-9"></div>
+
+  <div class="order-3 lg:order-2 w-full lg:w-auto scrollx">
+    <div class="flex items-center gap-1 bg-[#181c24] p-1 rounded-xl border border-gray-800 w-max mx-auto lg:mx-0">
+      <button class="toptab on" data-top="canvas">CANVAS</button>
+      <button class="toptab" data-top="svg">SVG MOTION <i class="fa-solid fa-lock-open text-[10px] ml-1 text-emerald-400"></i></button>
+      <button class="toptab" data-top="code"><i class="fa-solid fa-code mr-1"></i> KODE JS</button>
+      <button class="toptab" data-top="layer">VISUAL LAYER</button>
     </div>
-    <button id="btnBulk" class="px-3 py-1.5 text-xs font-medium bg-[#1d2330] hover:bg-[#252e40] text-gray-300 border border-gray-700 rounded-lg"><i class="fa-solid fa-file-zipper mr-1"></i> BULK ZIP <i class="fa-solid fa-lock-open text-[10px] ml-1 text-emerald-400"></i></button>
-    <button id="btnLic" class="px-4 py-1.5 text-xs font-bold bg-amber-500 hover:bg-amber-400 text-black rounded-lg ml-2"><i class="fa-solid fa-crown mr-1"></i> BELI LISENSI</button>
+  </div>
+
+  <div class="flex items-center gap-1.5 lg:gap-2 order-2 lg:order-3">
+    <button id="btnTerm" title="Terminal Editor" class="hb bg-[#1d2330] hover:bg-[#252e40] text-blue-400 border border-blue-900/50"><i class="fa-solid fa-terminal"></i><span class="hidden lg:inline ml-1">TERMINAL EDITOR</span></button>
+    <button id="btnPrompt" title="Prompt AI" class="hb bg-gradient-to-r from-amber-500 to-orange-500 text-black"><i class="fa-solid fa-wand-magic-sparkles"></i><span class="hidden lg:inline ml-1">PROMPT AI</span></button>
+    <div class="relative">
+      <button id="btnGen" title="AI Generators" class="hb bg-[#1d2330] hover:bg-[#252e40] text-gray-300 border border-gray-700"><i class="fa-solid fa-bolt text-amber-400 lg:hidden"></i><span class="hidden lg:inline">AI GENERATORS</span> <i class="fa-solid fa-chevron-down text-[10px] ml-1"></i></button>
+      <div id="menuGen" class="menu hidden right-0 top-11"></div>
+    </div>
+    <button id="btnBulk" title="Bulk ZIP" class="hb bg-[#1d2330] hover:bg-[#252e40] text-gray-300 border border-gray-700"><i class="fa-solid fa-file-zipper"></i><span class="hidden lg:inline ml-1">BULK ZIP</span> <i class="fa-solid fa-lock-open text-[10px] ml-1 text-emerald-400 hidden lg:inline"></i></button>
+    <button id="btnLic" title="Lisensi" class="hb bg-amber-500 hover:bg-amber-400 text-black font-bold lg:ml-2"><i class="fa-solid fa-crown"></i><span class="hidden lg:inline ml-1">BELI LISENSI</span></button>
   </div>
 </header>
 
-<div class="flex flex-1 overflow-hidden">
-  <!-- KIRI -->
-  <div class="flex-1 flex flex-col p-4 bg-[#0a0c0f] border-r border-gray-800 min-w-0">
-    <div class="flex justify-between items-center mb-3">
-      <div class="flex items-center space-x-2">
-        <span class="text-xs font-bold tracking-wide text-cyan-400">LIVE VIEWPORT MONITOR</span>
+<main class="flex flex-1 min-h-0 flex-col lg:flex-row">
+  <!-- MONITOR -->
+  <section class="flex flex-col flex-none lg:flex-1 min-w-0 p-2 lg:p-4 bg-[#0a0c0f] lg:border-r border-gray-800">
+    <div class="flex flex-wrap justify-between items-center gap-1.5 mb-2 lg:mb-3">
+      <div class="flex items-center gap-2">
+        <span class="hidden sm:inline text-xs font-bold tracking-wide text-cyan-400">LIVE VIEWPORT MONITOR</span>
         <span id="infoLbl" class="text-[10px] text-gray-500">1920x1080 • 30 FPS</span>
       </div>
-      <div class="flex items-center space-x-2">
+      <div class="flex items-center gap-1.5">
         <div class="relative">
-          <button id="btnAlpha" class="px-2 py-1 bg-cyan-950 text-cyan-400 border border-cyan-800 text-[10px] font-bold rounded flex items-center"><i class="fa-solid fa-circle text-[6px] mr-1"></i><span id="alphaLbl">ALPHA</span><i class="fa-solid fa-chevron-down text-[8px] ml-1"></i></button>
-          <div id="menuAlpha" class="menu hidden right-0 top-7">
+          <button id="btnAlpha" class="px-2 py-1.5 bg-cyan-950 text-cyan-400 border border-cyan-800 text-[10px] font-bold rounded flex items-center"><i class="fa-solid fa-circle text-[6px] mr-1"></i><span id="alphaLbl">ALPHA</span><i class="fa-solid fa-chevron-down text-[8px] ml-1"></i></button>
+          <div id="menuAlpha" class="menu hidden right-0 top-9">
             <button data-bg="alpha">Alpha Transparan</button>
             <button data-bg="black">Hitam</button>
             <button data-bg="white">Putih</button>
             <button data-bg="green">Hijau (Chroma Key)</button>
           </div>
         </div>
-        <button id="btnGuide" class="px-2 py-1 bg-[#161b22] hover:bg-[#1d2430] text-teal-400 border border-teal-900 text-[10px] font-bold rounded">PANDUAN MOV ALPHA</button>
-        <button id="btnGrid" class="px-2 py-1 bg-[#161b22] text-gray-300 border border-gray-700 text-[10px] rounded"><i class="fa-solid fa-table-cells mr-1"></i> GRID</button>
-        <button id="btnOpt" class="px-2 py-1 bg-emerald-950 text-emerald-400 border border-emerald-800 text-[10px] font-bold rounded">PREVIEW OPTIMAL</button>
+        <button id="btnGuide" class="px-2 py-1.5 bg-[#161b22] hover:bg-[#1d2430] text-teal-400 border border-teal-900 text-[10px] font-bold rounded"><span class="hidden sm:inline">PANDUAN </span>MOV<span class="hidden sm:inline"> ALPHA</span></button>
+        <button id="btnGrid" class="px-2 py-1.5 bg-[#161b22] text-gray-300 border border-gray-700 text-[10px] rounded"><i class="fa-solid fa-table-cells"></i><span class="hidden sm:inline ml-1">GRID</span></button>
+        <button id="btnOpt" class="px-2 py-1.5 bg-emerald-950 text-emerald-400 border border-emerald-800 text-[10px] font-bold rounded"></button>
       </div>
     </div>
 
-    <div id="stage" class="flex-1 min-h-0 checker border border-gray-800 rounded-xl relative overflow-hidden">
+    <div id="stage" class="h-[32dvh] min-h-[170px] lg:h-auto lg:flex-1 lg:min-h-0 checker border border-gray-800 rounded-xl relative overflow-hidden">
       <div class="absolute inset-0 flex items-center justify-center">
-        <div class="relative" id="cvWrap" style="width:640px;height:360px">
+        <div class="relative" id="cvWrap" style="width:320px;height:180px">
           <div id="svgHost" class="absolute inset-0 pointer-events-none" style="visibility:hidden"></div>
           <canvas id="cv" class="absolute inset-0" style="width:100%;height:100%"></canvas>
           <div id="gridOv" class="absolute inset-0 pointer-events-none hidden" style="background:
@@ -97,39 +119,38 @@ button:disabled{opacity:.5;cursor:not-allowed}
             outline:1px solid #fff5"></div>
         </div>
       </div>
-      <div class="absolute top-4 left-4 bg-black/60 backdrop-blur border border-gray-800 px-3 py-1 rounded-full text-xs text-cyan-300 flex items-center space-x-2">
+      <div class="absolute top-2 left-2 lg:top-4 lg:left-4 bg-black/60 backdrop-blur border border-gray-800 px-2.5 py-0.5 lg:px-3 lg:py-1 rounded-full text-[10px] lg:text-xs text-cyan-300 flex items-center space-x-2 pointer-events-none">
         <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span><span id="bgLbl">Alpha Transparan</span>
       </div>
     </div>
 
-    <div class="mt-3 flex items-center justify-between bg-[#12151a] p-2 rounded-xl border border-gray-800">
-      <div class="flex items-center space-x-2">
-        <button id="btnPlay" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold flex items-center"><i class="fa-solid fa-pause mr-1"></i> PAUSE</button>
-        <button id="btnReplay" class="p-1.5 px-2.5 bg-[#1d2330] text-gray-400 hover:text-white rounded-lg"><i class="fa-solid fa-rotate-right text-xs"></i></button>
-      </div>
-      <div class="flex-1 mx-4 py-2 cursor-pointer" id="seek">
+    <div class="mt-2 lg:mt-3 flex items-center gap-2 bg-[#12151a] p-1.5 lg:p-2 rounded-xl border border-gray-800">
+      <button id="btnPlay" class="px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold flex items-center whitespace-nowrap"><i class="fa-solid fa-pause mr-1"></i> PAUSE</button>
+      <button id="btnReplay" title="Ulang" class="py-2 px-3 bg-[#1d2330] text-gray-400 hover:text-white rounded-lg"><i class="fa-solid fa-rotate-right text-xs"></i></button>
+      <div class="flex-1 min-w-0 py-3 cursor-pointer" id="seek">
         <div class="w-full bg-gray-800 h-1.5 rounded-full overflow-hidden"><div id="seekBar" class="bg-indigo-500 h-full" style="width:0%"></div></div>
       </div>
-      <span id="timeLbl" class="text-xs text-gray-400 font-mono">0.00s / 30s</span>
+      <span id="timeLbl" class="text-[10px] lg:text-xs text-gray-400 font-mono whitespace-nowrap">0.00s / 30s</span>
+      <button id="btnExportM" title="Export" class="lg:hidden py-2 px-3 bg-emerald-500 text-black rounded-lg text-xs font-bold"><i class="fa-solid fa-download"></i></button>
     </div>
-  </div>
+  </section>
 
-  <!-- KANAN -->
-  <div class="w-[360px] bg-[#12151a] flex flex-col border-l border-gray-800">
-    <div class="flex border-b border-gray-800 text-xs font-semibold">
+  <!-- PANEL -->
+  <aside class="w-full lg:w-[360px] flex-1 lg:flex-none min-h-0 bg-[#12151a] flex flex-col border-t lg:border-t-0 lg:border-l border-gray-800">
+    <div class="flex border-b border-gray-800 text-xs font-semibold shrink-0">
       <button class="rtab on" data-rt="config"><i class="fa-solid fa-sliders mr-1"></i> CONFIG</button>
       <button class="rtab" data-rt="assets">ASSETS</button>
       <button class="rtab" data-rt="cover">COVER</button>
       <button class="rtab" data-rt="logs">LOGS</button>
     </div>
 
-    <div class="flex-1 overflow-y-auto text-xs">
+    <div class="flex-1 min-h-0 overflow-y-auto text-xs" style="padding-bottom:env(safe-area-inset-bottom)">
       <!-- CONFIG -->
-      <div id="p-config" class="p-4 space-y-4">
+      <div id="p-config" class="p-3 lg:p-4 space-y-4">
         <div class="bg-[#181c24] p-3 rounded-xl border border-gray-800">
-          <div class="flex items-center justify-between mb-2">
-            <span class="text-[11px] font-bold text-amber-400"><i class="fa-solid fa-wand-magic mr-1"></i> PRESET RESOLUSI MICROSTOCK</span>
-            <span id="brLbl" class="text-[9px] text-gray-500">Auto Bitrate</span>
+          <div class="flex items-center justify-between mb-2 gap-2">
+            <span class="text-[11px] font-bold text-amber-400"><i class="fa-solid fa-wand-magic mr-1"></i> PRESET MICROSTOCK</span>
+            <span id="brLbl" class="text-[9px] text-gray-500 text-right">Auto Bitrate</span>
           </div>
           <div class="grid grid-cols-2 gap-2">
             <button class="preset" data-g="res" data-v="720"><div class="pt font-bold text-white">HD 720p</div><div class="text-[9px] text-gray-500">1280x720 • 8 Mbps</div></button>
@@ -173,12 +194,12 @@ button:disabled{opacity:.5;cursor:not-allowed}
           </div>
         </div>
 
-        <div class="bg-[#181c24] p-3 rounded-xl border border-gray-800 space-y-2">
+        <div class="bg-[#181c24] p-3 rounded-xl border border-gray-800 space-y-3">
           <div class="text-[11px] font-bold text-cyan-400">PARAMETER EFEK (CANVAS)</div>
           <label class="block text-gray-400">Warna (hue) <span id="hueV" class="text-amber-400"></span>
-            <input id="rHue" type="range" min="0" max="360" class="w-full"></label>
+            <input id="rHue" type="range" min="0" max="360" class="w-full h-6"></label>
           <label class="block text-gray-400">Kecepatan <span id="spdV" class="text-amber-400"></span>
-            <input id="rSpd" type="range" min="0.25" max="3" step="0.25" class="w-full"></label>
+            <input id="rSpd" type="range" min="0.25" max="3" step="0.25" class="w-full h-6"></label>
         </div>
 
         <div>
@@ -192,21 +213,21 @@ button:disabled{opacity:.5;cursor:not-allowed}
             <button id="pjUndo" class="opt" title="Undo (Ctrl+Z)"><i class="fa-solid fa-rotate-left"></i></button>
             <button id="pjRedo" class="opt" title="Redo (Ctrl+Y)"><i class="fa-solid fa-rotate-right"></i></button>
             <button id="pjSave" class="opt" title="Simpan .json"><i class="fa-solid fa-floppy-disk"></i></button>
-            <label class="opt text-center cursor-pointer" title="Buka .json"><i class="fa-solid fa-folder-open"></i><input id="pjOpen" type="file" accept=".json" class="hidden"></label>
+            <label class="opt text-center cursor-pointer flex items-center justify-center" title="Buka .json"><i class="fa-solid fa-folder-open"></i><input id="pjOpen" type="file" accept=".json" class="hidden"></label>
             <button id="pjReset" class="opt" title="Reset semua"><i class="fa-solid fa-trash"></i></button>
           </div>
           <p class="text-[10px] text-gray-500 mt-1">Tersimpan otomatis di browser. Asset gambar ikut tersimpan hanya di file .json.</p>
         </div>
 
-        <div class="pt-2 space-y-2">
+        <div class="pt-1 space-y-2">
           <button id="btnExportOpen" class="w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-black font-bold rounded-xl shadow-lg hover:opacity-95 flex items-center justify-center space-x-2"><i class="fa-solid fa-download"></i><span>EXPORT VIDEO</span></button>
           <button id="btnOpenTerm" class="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-black font-bold rounded-xl shadow-lg hover:opacity-95 flex items-center justify-center space-x-2"><i class="fa-solid fa-terminal"></i><span>BUKA TERMINAL</span></button>
         </div>
       </div>
 
       <!-- ASSETS -->
-      <div id="p-assets" class="p-4 space-y-3 hidden">
-        <label class="block w-full py-3 text-center border-2 border-dashed border-gray-700 hover:border-amber-500 rounded-xl cursor-pointer text-gray-400">
+      <div id="p-assets" class="p-3 lg:p-4 space-y-3 hidden">
+        <label class="block w-full py-4 text-center border-2 border-dashed border-gray-700 hover:border-amber-500 rounded-xl cursor-pointer text-gray-400">
           <i class="fa-solid fa-upload mr-1"></i> Upload gambar (PNG/JPG/SVG/WebP)
           <input id="fileAsset" type="file" accept="image/*" multiple class="hidden">
         </label>
@@ -215,7 +236,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
       </div>
 
       <!-- COVER -->
-      <div id="p-cover" class="p-4 space-y-3 hidden">
+      <div id="p-cover" class="p-3 lg:p-4 space-y-3 hidden">
         <input id="cvTitle" class="ipt" placeholder="Judul cover" value="MOTION STUDIO">
         <input id="cvSub" class="ipt" placeholder="Subjudul" value="Alpha Loop Background">
         <select id="cvStyle" class="ipt">
@@ -225,22 +246,22 @@ button:disabled{opacity:.5;cursor:not-allowed}
         </select>
         <canvas id="cvCover" width="1280" height="720" class="w-full rounded-lg border border-gray-800 checker"></canvas>
         <div class="grid grid-cols-2 gap-2">
-          <button id="btnCoverGen" class="py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg font-bold">Ambil Frame Sekarang</button>
-          <button id="btnCoverDl" class="py-2 bg-amber-500 hover:bg-amber-400 text-black rounded-lg font-bold">Download PNG</button>
+          <button id="btnCoverGen" class="py-2.5 bg-indigo-600 hover:bg-indigo-500 rounded-lg font-bold">Ambil Frame</button>
+          <button id="btnCoverDl" class="py-2.5 bg-amber-500 hover:bg-amber-400 text-black rounded-lg font-bold">Download PNG</button>
         </div>
       </div>
 
       <!-- LOGS -->
-      <div id="p-logs" class="p-4 space-y-2 hidden">
+      <div id="p-logs" class="p-3 lg:p-4 space-y-2 hidden">
         <div class="flex gap-2">
-          <button id="btnLogClear" class="flex-1 py-1.5 bg-[#1d2330] border border-gray-700 rounded-lg">Bersihkan</button>
-          <button id="btnLogCopy" class="flex-1 py-1.5 bg-[#1d2330] border border-gray-700 rounded-lg">Salin</button>
+          <button id="btnLogClear" class="flex-1 py-2 bg-[#1d2330] border border-gray-700 rounded-lg">Bersihkan</button>
+          <button id="btnLogCopy" class="flex-1 py-2 bg-[#1d2330] border border-gray-700 rounded-lg">Salin</button>
         </div>
-        <div id="logBox" class="font-mono text-[10px] space-y-1"></div>
+        <div id="logBox" class="font-mono text-[10px] space-y-1 break-words"></div>
       </div>
 
       <!-- VISUAL LAYER -->
-      <div id="p-layer" class="p-4 space-y-3 hidden">
+      <div id="p-layer" class="p-3 lg:p-4 space-y-3 hidden">
         <div class="grid grid-cols-3 gap-2">
           <button class="opt" data-addlayer="text">+ Teks</button>
           <button class="opt" data-addlayer="circle">+ Lingkaran</button>
@@ -249,37 +270,37 @@ button:disabled{opacity:.5;cursor:not-allowed}
         <div id="layerList" class="space-y-2"></div>
       </div>
     </div>
-  </div>
-</div>
+  </aside>
+</main>
 
 <!-- MODAL: TERMINAL -->
-<div id="m-term" class="modal hidden fixed inset-0 z-50 bg-black/70 items-center justify-center p-4">
-  <div class="bg-[#12151a] border border-gray-700 rounded-2xl w-full max-w-3xl flex flex-col max-h-[90vh]">
-    <div class="flex items-center justify-between px-4 py-3 border-b border-gray-800">
+<div id="m-term" class="modal hidden fixed inset-0 z-50 bg-black/70 items-end sm:items-center justify-center sm:p-4">
+  <div class="sheet sm:max-w-3xl">
+    <div class="flex items-center justify-between px-4 py-3 border-b border-gray-800 shrink-0">
       <span class="font-bold text-sm text-blue-400"><i class="fa-solid fa-terminal mr-2"></i><span id="edTitle">Editor Kode JS</span></span>
-      <button class="text-gray-400 hover:text-white" data-close><i class="fa-solid fa-xmark"></i></button>
+      <button class="text-gray-400 hover:text-white p-2" data-close><i class="fa-solid fa-xmark"></i></button>
     </div>
-    <div class="p-4 space-y-3 overflow-y-auto">
+    <div class="p-3 sm:p-4 space-y-3 overflow-y-auto">
       <p id="edHint" class="text-[11px] text-gray-500"></p>
-      <textarea id="codeArea" spellcheck="false" class="w-full h-72 bg-[#0a0c0f] border border-gray-800 rounded-lg p-3 font-mono text-xs text-emerald-300 focus:outline-none focus:border-amber-500"></textarea>
-      <div class="flex flex-wrap gap-2">
-        <button id="edRun" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-xs font-bold"><i class="fa-solid fa-play mr-1"></i> Jalankan (Ctrl+Enter)</button>
-        <button id="edReset" class="px-4 py-2 bg-[#1d2330] border border-gray-700 rounded-lg text-xs">Reset</button>
-        <button id="edExport" class="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black rounded-lg text-xs font-bold"><i class="fa-solid fa-download mr-1"></i> Export Video...</button>
-        <button id="edPng" class="px-4 py-2 bg-[#1d2330] border border-gray-700 rounded-lg text-xs"><i class="fa-solid fa-image mr-1"></i> PNG Frame</button>
+      <textarea id="codeArea" spellcheck="false" autocapitalize="off" autocorrect="off" class="w-full h-56 sm:h-72 bg-[#0a0c0f] border border-gray-800 rounded-lg p-3 font-mono text-xs text-emerald-300 focus:outline-none focus:border-amber-500"></textarea>
+      <div class="grid grid-cols-2 sm:flex sm:flex-wrap gap-2">
+        <button id="edRun" class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-xs font-bold"><i class="fa-solid fa-play mr-1"></i> Jalankan</button>
+        <button id="edReset" class="px-4 py-2.5 bg-[#1d2330] border border-gray-700 rounded-lg text-xs">Reset</button>
+        <button id="edExport" class="px-4 py-2.5 bg-amber-500 hover:bg-amber-400 text-black rounded-lg text-xs font-bold"><i class="fa-solid fa-download mr-1"></i> Export Video...</button>
+        <button id="edPng" class="px-4 py-2.5 bg-[#1d2330] border border-gray-700 rounded-lg text-xs"><i class="fa-solid fa-image mr-1"></i> PNG Frame</button>
       </div>
     </div>
   </div>
 </div>
 
 <!-- MODAL: EXPORT -->
-<div id="m-export" class="modal hidden fixed inset-0 z-50 bg-black/70 items-center justify-center p-4">
-  <div class="bg-[#12151a] border border-gray-700 rounded-2xl w-full max-w-lg max-h-[92vh] flex flex-col">
-    <div class="flex items-center justify-between px-4 py-3 border-b border-gray-800">
+<div id="m-export" class="modal hidden fixed inset-0 z-50 bg-black/70 items-end sm:items-center justify-center sm:p-4">
+  <div class="sheet sm:max-w-lg">
+    <div class="flex items-center justify-between px-4 py-3 border-b border-gray-800 shrink-0">
       <span class="font-bold text-sm text-emerald-400"><i class="fa-solid fa-download mr-2"></i>Export Video (Render Offline)</span>
-      <button class="text-gray-400 hover:text-white" data-close><i class="fa-solid fa-xmark"></i></button>
+      <button class="text-gray-400 hover:text-white p-2" data-close><i class="fa-solid fa-xmark"></i></button>
     </div>
-    <div class="p-4 space-y-3 text-xs overflow-y-auto">
+    <div class="p-3 sm:p-4 space-y-3 text-xs overflow-y-auto">
       <div id="exInfo" class="text-gray-400"></div>
       <select id="exFmt" class="ipt">
         <option value="webm">WebM VP9 + Alpha (transparan)</option>
@@ -291,65 +312,65 @@ button:disabled{opacity:.5;cursor:not-allowed}
         <div class="text-[11px] text-amber-400 mb-1" id="exLbl">Merender...</div>
         <div class="w-full bg-gray-800 h-2 rounded-full overflow-hidden"><div id="exBar" class="bg-emerald-500 h-full" style="width:0%"></div></div>
       </div>
-      <div class="flex gap-2">
-        <button id="exGo" class="flex-1 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-black font-bold rounded-lg">Mulai Export</button>
-        <button id="exCancel" class="px-4 py-2.5 bg-[#1d2330] border border-gray-700 rounded-lg">Batal</button>
-        <button id="exLoop" class="px-4 py-2.5 bg-[#1d2330] border border-gray-700 rounded-lg">Cek Loop</button>
+      <div class="flex flex-wrap gap-2">
+        <button id="exGo" class="flex-1 min-w-[140px] py-3 bg-emerald-500 hover:bg-emerald-400 text-black font-bold rounded-lg">Mulai Export</button>
+        <button id="exCancel" class="px-4 py-3 bg-[#1d2330] border border-gray-700 rounded-lg">Batal</button>
+        <button id="exLoop" class="px-4 py-3 bg-[#1d2330] border border-gray-700 rounded-lg">Cek Loop</button>
       </div>
       <div id="exLoopRes" class="text-[11px]"></div>
       <div class="border-t border-gray-800 pt-3 space-y-2">
         <div class="text-[11px] font-bold text-amber-400">METADATA MICROSTOCK</div>
         <input id="mtTitle" class="ipt" placeholder="Judul (opsional, otomatis jika kosong)">
-        <button id="mtGen" class="w-full py-2 bg-[#1d2330] border border-gray-700 rounded-lg">Buat Judul, Deskripsi &amp; Keyword</button>
+        <button id="mtGen" class="w-full py-2.5 bg-[#1d2330] border border-gray-700 rounded-lg">Buat Judul, Deskripsi &amp; Keyword</button>
         <textarea id="mtOut" class="ipt h-32 font-mono" readonly></textarea>
-        <button id="mtCopy" class="w-full py-2 bg-[#1d2330] border border-gray-700 rounded-lg">Salin</button>
+        <button id="mtCopy" class="w-full py-2.5 bg-[#1d2330] border border-gray-700 rounded-lg">Salin</button>
       </div>
     </div>
   </div>
 </div>
 
 <!-- MODAL: PROMPT AI -->
-<div id="m-prompt" class="modal hidden fixed inset-0 z-50 bg-black/70 items-center justify-center p-4">
-  <div class="bg-[#12151a] border border-gray-700 rounded-2xl w-full max-w-lg">
-    <div class="flex items-center justify-between px-4 py-3 border-b border-gray-800">
+<div id="m-prompt" class="modal hidden fixed inset-0 z-50 bg-black/70 items-end sm:items-center justify-center sm:p-4">
+  <div class="sheet sm:max-w-lg">
+    <div class="flex items-center justify-between px-4 py-3 border-b border-gray-800 shrink-0">
       <span class="font-bold text-sm text-amber-400"><i class="fa-solid fa-wand-magic-sparkles mr-2"></i>Prompt AI</span>
-      <button class="text-gray-400 hover:text-white" data-close><i class="fa-solid fa-xmark"></i></button>
+      <button class="text-gray-400 hover:text-white p-2" data-close><i class="fa-solid fa-xmark"></i></button>
     </div>
-    <div class="p-4 space-y-3 text-xs">
+    <div class="p-3 sm:p-4 space-y-3 text-xs overflow-y-auto">
       <textarea id="promptIn" class="ipt h-24" placeholder='Contoh: partikel emas cepat dengan teks "SALE 50%"'></textarea>
       <div class="flex flex-wrap gap-1.5" id="promptChips"></div>
       <p class="text-[10px] text-gray-500">Mengenali: partikel, gelombang, matrix, bintang, aura, grid neon, natal, ramadan, halloween, tahun baru, valentine · warna · cepat/lambat · teks dalam tanda kutip. Berjalan lokal tanpa API.</p>
-      <button id="promptGo" class="w-full py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-black font-bold rounded-lg">Generate</button>
+      <button id="promptGo" class="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-black font-bold rounded-lg">Generate</button>
     </div>
   </div>
 </div>
 
 <!-- MODAL: GUIDE -->
-<div id="m-guide" class="modal hidden fixed inset-0 z-50 bg-black/70 items-center justify-center p-4">
-  <div class="bg-[#12151a] border border-gray-700 rounded-2xl w-full max-w-xl">
-    <div class="flex items-center justify-between px-4 py-3 border-b border-gray-800">
+<div id="m-guide" class="modal hidden fixed inset-0 z-50 bg-black/70 items-end sm:items-center justify-center sm:p-4">
+  <div class="sheet sm:max-w-xl">
+    <div class="flex items-center justify-between px-4 py-3 border-b border-gray-800 shrink-0">
       <span class="font-bold text-sm text-teal-400">Panduan MOV Alpha</span>
-      <button class="text-gray-400 hover:text-white" data-close><i class="fa-solid fa-xmark"></i></button>
+      <button class="text-gray-400 hover:text-white p-2" data-close><i class="fa-solid fa-xmark"></i></button>
     </div>
-    <div class="p-4 space-y-3 text-xs text-gray-300">
+    <div class="p-3 sm:p-4 space-y-3 text-xs text-gray-300 overflow-y-auto">
       <p><b>Cara paling pasti (alpha dijamin):</b> export <b>PNG Sequence (ZIP)</b>, ekstrak semua part ke satu folder, lalu jalankan:</p>
-      <pre id="ffcmd" class="bg-[#0a0c0f] border border-gray-800 rounded-lg p-3 font-mono text-[11px] text-emerald-300 whitespace-pre-wrap">ffmpeg -framerate 30 -i frame_%05d.png -c:v prores_ks -profile:v 4444 -pix_fmt yuva444p10le output.mov</parameter></pre>
-      <button id="ffCopy" class="px-3 py-1.5 bg-[#1d2330] border border-gray-700 rounded-lg">Salin perintah</button>
+      <pre id="ffcmd" class="bg-[#0a0c0f] border border-gray-800 rounded-lg p-3 font-mono text-[11px] text-emerald-300 whitespace-pre-wrap break-all">ffmpeg -framerate 30 -i frame_%05d.png -c:v prores_ks -profile:v 4444 -pix_fmt yuva444p10le output.mov</pre>
+      <button id="ffCopy" class="px-3 py-2 bg-[#1d2330] border border-gray-700 rounded-lg">Salin perintah</button>
       <p>Dari WebM alpha ke MOV (decoder <code>libvpx-vp9</code> wajib sebelum <code>-i</code>):</p>
-      <pre class="bg-[#0a0c0f] border border-gray-800 rounded-lg p-3 font-mono text-[11px] text-emerald-300 whitespace-pre-wrap">ffmpeg -c:v libvpx-vp9 -i input.webm -c:v prores_ks -profile:v 4444 -pix_fmt yuva444p10le output.mov</pre>
+      <pre class="bg-[#0a0c0f] border border-gray-800 rounded-lg p-3 font-mono text-[11px] text-emerald-300 whitespace-pre-wrap break-all">ffmpeg -c:v libvpx-vp9 -i input.webm -c:v prores_ks -profile:v 4444 -pix_fmt yuva444p10le output.mov</pre>
       <p class="text-gray-500">Samakan angka <code>-framerate</code> dengan FPS di Config.</p>
     </div>
   </div>
 </div>
 
 <!-- MODAL: LICENSE -->
-<div id="m-lic" class="modal hidden fixed inset-0 z-50 bg-black/70 items-center justify-center p-4">
-  <div class="bg-[#12151a] border border-gray-700 rounded-2xl w-full max-w-sm">
-    <div class="flex items-center justify-between px-4 py-3 border-b border-gray-800">
+<div id="m-lic" class="modal hidden fixed inset-0 z-50 bg-black/70 items-end sm:items-center justify-center sm:p-4">
+  <div class="sheet sm:max-w-sm">
+    <div class="flex items-center justify-between px-4 py-3 border-b border-gray-800 shrink-0">
       <span class="font-bold text-sm text-amber-400"><i class="fa-solid fa-crown mr-2"></i>Lisensi</span>
-      <button class="text-gray-400 hover:text-white" data-close><i class="fa-solid fa-xmark"></i></button>
+      <button class="text-gray-400 hover:text-white p-2" data-close><i class="fa-solid fa-xmark"></i></button>
     </div>
-    <div class="p-4 space-y-2 text-xs">
+    <div class="p-4 space-y-2 text-xs overflow-y-auto">
       <div class="py-3 text-center bg-emerald-950 border border-emerald-800 text-emerald-400 font-bold rounded-lg">LISENSI PRO AKTIF</div>
       <ul class="text-gray-300 space-y-1 pt-2">
         <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>SVG Motion</li>
@@ -362,34 +383,32 @@ button:disabled{opacity:.5;cursor:not-allowed}
 </div>
 
 <!-- MODAL: BULK -->
-<div id="m-bulk" class="modal hidden fixed inset-0 z-50 bg-black/70 items-center justify-center p-4">
-  <div class="bg-[#12151a] border border-gray-700 rounded-2xl w-full max-w-md">
-    <div class="flex items-center justify-between px-4 py-3 border-b border-gray-800">
+<div id="m-bulk" class="modal hidden fixed inset-0 z-50 bg-black/70 items-end sm:items-center justify-center sm:p-4">
+  <div class="sheet sm:max-w-md">
+    <div class="flex items-center justify-between px-4 py-3 border-b border-gray-800 shrink-0">
       <span class="font-bold text-sm text-gray-200"><i class="fa-solid fa-file-zipper mr-2"></i>Bulk ZIP</span>
-      <button class="text-gray-400 hover:text-white" data-close><i class="fa-solid fa-xmark"></i></button>
+      <button class="text-gray-400 hover:text-white p-2" data-close><i class="fa-solid fa-xmark"></i></button>
     </div>
-    <div class="p-4 space-y-3 text-xs">
+    <div class="p-3 sm:p-4 space-y-3 text-xs overflow-y-auto">
       <p class="text-gray-400">Render beberapa tema sekaligus (offline, WebM) dengan setelan Config saat ini, lalu unduh satu ZIP.</p>
       <div id="bulkList" class="grid grid-cols-2 gap-1.5"></div>
       <div id="bulkWrap" class="hidden">
         <div class="text-[11px] text-amber-400 mb-1" id="bulkLbl"></div>
         <div class="w-full bg-gray-800 h-2 rounded-full overflow-hidden"><div id="bulkBar" class="bg-amber-500 h-full" style="width:0%"></div></div>
       </div>
-      <button id="bulkGo" class="w-full py-2.5 bg-amber-500 hover:bg-amber-400 text-black font-bold rounded-lg">Mulai Render ZIP</button>
+      <button id="bulkGo" class="w-full py-3 bg-amber-500 hover:bg-amber-400 text-black font-bold rounded-lg">Mulai Render ZIP</button>
     </div>
   </div>
 </div>
 
-<div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[#181c24] border border-amber-500 text-amber-300 text-xs px-4 py-2 rounded-lg z-[60] hidden max-w-[90vw]"></div>
+<div id="toast" class="fixed left-1/2 -translate-x-1/2 bg-[#181c24] border border-amber-500 text-amber-300 text-xs px-4 py-2 rounded-lg z-[60] hidden max-w-[92vw] text-center" style="bottom:calc(1rem + env(safe-area-inset-bottom))"></div>
 
 <script>
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const rnd=(i,k)=>{const x=Math.sin(i*127.1+k*311.7)*43758.5453;return x-Math.floor(x)};
 const yieldUI=()=>new Promise(r=>{const c=new MessageChannel();c.port1.onmessage=()=>r();c.port2.postMessage(0)});
 
-/* ================= PRESET CANVAS (semua loop mulus) =================
-   Argumen: ctx, t, w, h, P{hue,speed}, assets, rnd(i,k), ph(periode), D(durasi)
-   ph(p) = fase 0..1 yang SELALU berulang bulat di dalam durasi video. */
+/* ================= PRESET CANVAS (semua loop mulus) ================= */
 const PRESETS={
 'Partikel':function(ctx,t,w,h,P,assets,rnd,ph,D){
   const s=h/1080;
@@ -745,7 +764,7 @@ function compile(){
   catch(e){log('Error sintaks: '+e.message,'err');toast('Error: '+e.message);return false}
 }
 
-/* ================= SVG MOTION (inline di shadow DOM, sinkron timeline) ================= */
+/* ================= SVG MOTION (shadow DOM, sinkron timeline) ================= */
 const host=$('#svgHost'),shadow=host.attachShadow({mode:'open'});
 shadow.innerHTML='<style>:host{display:block}svg{display:block;width:100%;height:100%}</style><div id="box" style="width:100%;height:100%"></div>';
 let svgEl=null,anims=[];
@@ -829,14 +848,12 @@ function runCanvasFn(ctx,t,w,h){
   try{S.fn(ctx,t,w,h,S.P,S.assetImgs,rnd,mkPh(t),S.dur)}
   catch(e){if(e.message!==lastErr){lastErr=e.message;log('Runtime error: '+e.message,'err')}}
 }
-/* preview (sinkron) */
 function renderFrame(c,t){
   const ctx=c.getContext('2d'),w=c.width,h=c.height;
   ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,w,h);
   if(S.mode==='canvas'){ctx.save();runCanvasFn(ctx,t,w,h);ctx.restore()}
   drawLayers(ctx,t,w,h);
 }
-/* export / cover (async, mendukung SVG) */
 async function renderAt(c,t,bgFill){
   const ctx=c.getContext('2d'),w=c.width,h=c.height;
   ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,w,h);
@@ -850,10 +867,15 @@ async function renderAt(c,t,bgFill){
 /* ================= SETTINGS UI ================= */
 function fitStage(){
   const r=$('#stage').getBoundingClientRect(),[w,h]=dims();
-  const k=Math.min((r.width-24)/w,(r.height-24)/h);
+  const pad=window.innerWidth<1024?8:24;
+  const k=Math.min((r.width-pad)/w,(r.height-pad)/h);
+  if(!(k>0))return;
   const wr=$('#cvWrap');wr.style.width=Math.max(20,Math.floor(w*k))+'px';wr.style.height=Math.max(20,Math.floor(h*k))+'px';
 }
 new ResizeObserver(fitStage).observe($('#stage'));
+window.addEventListener('resize',fitStage);
+window.addEventListener('orientationchange',()=>setTimeout(fitStage,200));
+function optLabel(){$('#btnOpt').innerHTML=S.optimal?'<span class="hidden sm:inline">PREVIEW </span>OPTIMAL':'<span class="hidden sm:inline">PREVIEW </span>FULL'}
 function applySettings(){
   const [w,h]=dims();let pw=w,ph=h;
   if(S.optimal&&Math.max(w,h)>1280){const k=1280/Math.max(w,h);pw=Math.round(w*k);ph=Math.round(h*k)}
@@ -862,8 +884,8 @@ function applySettings(){
   $('#durLbl').textContent=S.dur+' Detik';
   $('#brLbl').textContent='Auto Bitrate • '+BR[S.res]+' Mbps';
   $$('[data-g]').forEach(b=>b.classList.toggle('on',String(S[b.dataset.g])===b.dataset.v));
-  $('#btnOpt').className=S.optimal?'px-2 py-1 bg-emerald-950 text-emerald-400 border border-emerald-800 text-[10px] font-bold rounded':'px-2 py-1 bg-[#161b22] text-gray-400 border border-gray-700 text-[10px] font-bold rounded';
-  $('#btnOpt').textContent=S.optimal?'PREVIEW OPTIMAL':'PREVIEW FULL';
+  $('#btnOpt').className=S.optimal?'px-2 py-1.5 bg-emerald-950 text-emerald-400 border border-emerald-800 text-[10px] font-bold rounded':'px-2 py-1.5 bg-[#161b22] text-gray-400 border border-gray-700 text-[10px] font-bold rounded';
+  optLabel();
   if(S.t>=S.dur)S.t=0;
 }
 $$('[data-g]').forEach(b=>b.onclick=()=>{const g=b.dataset.g;S[g]=g==='ratio'?b.dataset.v:+b.dataset.v;applySettings();log(`Setting ${g} = ${b.dataset.v}`);commitD()});
@@ -888,16 +910,20 @@ $('#btnLic').onclick=()=>openM('m-lic');
 function setPlay(p){S.playing=p;$('#btnPlay').innerHTML=p?'<i class="fa-solid fa-pause mr-1"></i> PAUSE':'<i class="fa-solid fa-play mr-1"></i> PLAY'}
 $('#btnPlay').onclick=()=>setPlay(!S.playing);
 $('#btnReplay').onclick=()=>{S.t=0;setPlay(true)};
-$('#seek').onclick=e=>{const r=e.currentTarget.getBoundingClientRect();S.t=Math.max(0,Math.min(0.9999,(e.clientX-r.left)/r.width))*S.dur};
+const seekEl=$('#seek');let seeking=false;
+const seekTo=e=>{const r=seekEl.getBoundingClientRect();S.t=Math.max(0,Math.min(0.9999,(e.clientX-r.left)/r.width))*S.dur};
+seekEl.addEventListener('pointerdown',e=>{seeking=true;try{seekEl.setPointerCapture(e.pointerId)}catch(_){}seekTo(e)});
+seekEl.addEventListener('pointermove',e=>{if(seeking)seekTo(e)});
+['pointerup','pointercancel'].forEach(ev=>seekEl.addEventListener(ev,()=>{seeking=false}));
 let last=performance.now();
 function loop(now){
   const dt=Math.min(0.1,(now-last)/1000);last=now;
   if(!recording){
-    if(S.playing){S.t+=dt;if(S.t>=S.dur)S.t=0}
+    if(S.playing&&!seeking){S.t+=dt;if(S.t>=S.dur)S.t=0}
     if(S.mode==='svg')setAnimTime(S.t);
     renderFrame(cv,S.t);
     $('#seekBar').style.width=(S.t/S.dur*100)+'%';
-    $('#timeLbl').textContent=S.t.toFixed(2)+'s / '+S.dur+'s';
+    $('#timeLbl').textContent=S.t.toFixed(1)+'s / '+S.dur+'s';
   }
   requestAnimationFrame(loop);
 }
@@ -973,7 +999,7 @@ $('#seasonGrid').innerHTML=Object.keys(SEASONS).map(n=>`<button class="opt" data
 $$('[data-season]').forEach(b=>b.onclick=()=>loadSeason(b.dataset.season));
 
 const EX=['partikel emas cepat','gelombang biru lambat','matrix hijau','bintang ungu "COSMOS"','natal','ramadan','halloween','tahun baru cepat "2027"','valentine pink "LOVE"'];
-$('#promptChips').innerHTML=EX.map(x=>`<button class="opt" style="padding:.25rem .5rem">${x}</button>`).join('');
+$('#promptChips').innerHTML=EX.map(x=>`<button class="opt" style="padding:.35rem .6rem">${x}</button>`).join('');
 $$('#promptChips button').forEach(b=>b.onclick=()=>$('#promptIn').value=b.textContent);
 $('#btnPrompt').onclick=()=>{openM('m-prompt');setTimeout(()=>$('#promptIn').focus(),50)};
 $('#promptGo').onclick=()=>{
@@ -1011,13 +1037,13 @@ function renderLayers(){
   if(!S.layers.length)box.innerHTML='<p class="text-gray-500 text-[11px]">Belum ada layer. Tambah teks / bentuk di atas.</p>';
   S.layers.forEach((L,i)=>{
     const d=document.createElement('div');d.className='bg-[#181c24] border border-gray-800 rounded-xl p-2.5 space-y-2';
-    d.innerHTML=`<div class="flex justify-between items-center"><b class="text-amber-400 uppercase text-[10px]">${L.type} #${i+1}</b><button class="text-red-400 hover:text-red-300" data-del><i class="fa-solid fa-trash"></i></button></div>
+    d.innerHTML=`<div class="flex justify-between items-center"><b class="text-amber-400 uppercase text-[10px]">${L.type} #${i+1}</b><button class="text-red-400 hover:text-red-300 p-1" data-del><i class="fa-solid fa-trash"></i></button></div>
     ${L.type==='text'?`<input class="ipt" data-k="text" value="${String(L.text).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;')}">`:''}
-    <div class="flex gap-2"><input type="color" data-k="color" value="${L.color}" class="h-8 w-12 bg-transparent">
+    <div class="flex gap-2"><input type="color" data-k="color" value="${L.color}" class="h-9 w-12 bg-transparent">
     <select class="ipt" data-k="anim">${['none','fade','pulse','spin','slide','float'].map(a=>`<option ${a===L.anim?'selected':''}>${a}</option>`).join('')}</select></div>
-    <label class="block text-[10px] text-gray-500">X <input type="range" data-k="x" min="0" max="100" value="${L.x}" class="w-full"></label>
-    <label class="block text-[10px] text-gray-500">Y <input type="range" data-k="y" min="0" max="100" value="${L.y}" class="w-full"></label>
-    <label class="block text-[10px] text-gray-500">Ukuran <input type="range" data-k="size" min="1" max="80" value="${L.size}" class="w-full"></label>`;
+    <label class="block text-[10px] text-gray-500">X <input type="range" data-k="x" min="0" max="100" value="${L.x}" class="w-full h-6"></label>
+    <label class="block text-[10px] text-gray-500">Y <input type="range" data-k="y" min="0" max="100" value="${L.y}" class="w-full h-6"></label>
+    <label class="block text-[10px] text-gray-500">Ukuran <input type="range" data-k="size" min="1" max="80" value="${L.size}" class="w-full h-6"></label>`;
     d.querySelectorAll('[data-k]').forEach(el=>el.oninput=()=>{L[el.dataset.k]=el.type==='range'?+el.value:el.value;commitD()});
     d.querySelector('[data-del]').onclick=()=>{S.layers.splice(i,1);renderLayers();commitD()};
     box.appendChild(d);
@@ -1035,7 +1061,7 @@ function renderAssets(){
   Object.keys(S.assets).forEach(n=>{
     const d=document.createElement('div');d.className='flex items-center gap-2 bg-[#181c24] border border-gray-800 rounded-lg p-2';
     d.innerHTML=`<img src="${S.assets[n]}" class="w-10 h-10 object-cover rounded"><span class="flex-1 truncate">${n.replace(/</g,'&lt;')}</span>
-    <button class="px-2 py-1 bg-indigo-600 rounded" data-l>Layer</button><button class="text-red-400" data-d><i class="fa-solid fa-trash"></i></button>`;
+    <button class="px-2.5 py-1.5 bg-indigo-600 rounded" data-l>Layer</button><button class="text-red-400 p-2" data-d><i class="fa-solid fa-trash"></i></button>`;
     d.querySelector('[data-l]').onclick=()=>{addLayer('image',{asset:n,size:25});toast('Ditambah sebagai layer')};
     d.querySelector('[data-d]').onclick=()=>{delete S.assets[n];delete S.assetImgs[n];S.layers=S.layers.filter(l=>l.asset!==n);renderAssets();renderLayers();commitD()};
     box.appendChild(d);
@@ -1074,6 +1100,7 @@ function exNote(){
 }
 $('#exFmt').onchange=exNote;
 $('#btnExportOpen').onclick=openExport;
+$('#btnExportM').onclick=openExport;
 $('#exCancel').onclick=()=>{cancelFlag=true};
 
 async function encodeVideo(fmt,prog){
@@ -1204,7 +1231,7 @@ $('#mtCopy').onclick=()=>{navigator.clipboard.writeText($('#mtOut').value);toast
 
 /* ================= BULK ZIP (offline) ================= */
 const BULK_ITEMS=[...Object.keys(PRESETS),...Object.keys(SVGS)];
-$('#bulkList').innerHTML=BULK_ITEMS.map(n=>`<label class="flex items-center gap-2 bg-[#181c24] border border-gray-800 rounded-lg p-2"><input type="checkbox" checked value="${n}"> ${n}</label>`).join('');
+$('#bulkList').innerHTML=BULK_ITEMS.map(n=>`<label class="flex items-center gap-2 bg-[#181c24] border border-gray-800 rounded-lg p-2.5"><input type="checkbox" checked value="${n}"> ${n}</label>`).join('');
 $('#btnBulk').onclick=()=>openM('m-bulk');
 function applyItem(n){
   if(PRESETS[n]){S.mode='canvas';S.preset=n;S.theme=n;S.code=srcOf(PRESETS[n]);S.P={hue:HUE[n],speed:1};compile()}
