@@ -323,7 +323,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
       <div id="exLoopRes" class="text-[11px]"></div>
       <div id="exDone" class="hidden border border-emerald-800 bg-emerald-950/30 rounded-lg p-3 space-y-2">
         <div id="exDoneInfo" class="text-emerald-300 font-semibold"></div>
-        <div id="exVerify" class="text-[11px]"></div>
+        <div id="exVerify" class="text-[11px] min-h-[1.25rem]"></div>
         <div id="exDoneList" class="space-y-2"></div>
         <p class="text-[10px] text-gray-400">Tekan <b>Simpan</b> untuk mengunduh (Chrome Android menyimpan ke folder Download). Supaya langsung masuk galeri, tekan <b>Bagikan</b> lalu pilih Galeri atau Foto. Galeri kadang butuh beberapa detik untuk menampilkan file baru.</p>
       </div>
@@ -334,6 +334,14 @@ button:disabled{opacity:.5;cursor:not-allowed}
         <textarea id="mtOut" class="ipt h-32 font-mono" readonly></textarea>
         <button id="mtCopy" class="w-full py-2.5 bg-[#1d2330] border border-gray-700 rounded-lg">Salin</button>
       </div>
+    </div>
+    <div id="exBarAct" class="hidden shrink-0 border-t border-emerald-800 bg-[#0f1a16] p-3 space-y-2">
+      <div class="flex justify-between gap-2 text-[11px]"><span id="exActName" class="truncate text-gray-200"></span><span id="exActSize" class="text-gray-400 shrink-0"></span></div>
+      <div class="grid grid-cols-2 gap-2">
+        <button id="exActSave" class="py-3.5 bg-emerald-500 text-black font-bold rounded-lg text-sm">Simpan</button>
+        <button id="exActShare" class="py-3.5 bg-[#1d2330] border border-gray-600 rounded-lg font-semibold text-sm">Bagikan / Galeri</button>
+      </div>
+      <div id="exActMsg" class="text-[10px] min-h-[1.5rem] text-gray-400"></div>
     </div>
   </div>
 </div>
@@ -410,7 +418,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
   </div>
 </div>
 
-<div id="toast" class="fixed left-1/2 -translate-x-1/2 bg-[#181c24] border border-amber-500 text-amber-300 text-xs px-4 py-2 rounded-lg z-[60] hidden max-w-[92vw] text-center" style="bottom:calc(1rem + env(safe-area-inset-bottom))"></div>
+<div id="toast" class="fixed left-1/2 -translate-x-1/2 bg-[#181c24] border border-amber-500 text-amber-300 text-xs px-4 py-2 rounded-lg z-[60] hidden max-w-[92vw] text-center pointer-events-none" style="top:calc(.75rem + env(safe-area-inset-top))"></div>
 
 <script>
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
@@ -1003,10 +1011,14 @@ function runEditor(){
 }
 $('#btnTerm').onclick=openTerm;$('#btnOpenTerm').onclick=openTerm;
 $('#edRun').onclick=runEditor;
+const BLANK_SVG='<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">\n\n</svg>';
 $('#edReset').onclick=()=>{
-  if(S.mode==='svg'){S.svg=SVGS[S.theme]||SVGS['Natal'];setSvg()}
-  else{S.code=srcOf(PRESETS[S.preset]||PRESETS['Partikel']);compile()}
-  syncEditor();commitD();
+  if(S.mode==='svg'){
+    if(SVGS[S.theme]){S.svg=SVGS[S.theme];toast('SVG dikembalikan ke tema '+S.theme)}
+    else{S.svg=BLANK_SVG;S.theme='Kosong';toast('Editor dikosongkan')}
+    setSvg();
+  }else{S.code=srcOf(PRESETS[S.preset]||PRESETS['Partikel']);compile();toast('Kode dikembalikan ke '+S.preset)}
+  syncEditor();commit();
 };
 $('#codeArea').addEventListener('keydown',e=>{
   if(e.key==='Tab'){e.preventDefault();const a=e.target,s=a.selectionStart;a.value=a.value.slice(0,s)+'  '+a.value.slice(a.selectionEnd);a.selectionStart=a.selectionEnd=s+2}
@@ -1130,7 +1142,7 @@ $('#btnLogCopy').onclick=async()=>{toast(await copyText(LOGS.map(l=>`[${l.t}] ${
 /* ================= EXPORT OFFLINE ================= */
 const isTouch=matchMedia('(pointer:coarse)').matches;
 let OUT=[],lastEnc={alpha:false,refs:[],codec:''};
-function clearOut(){OUT.forEach(o=>{try{URL.revokeObjectURL(o.url)}catch(e){}});OUT=[];$('#exDone').classList.add('hidden');$('#exDoneList').innerHTML='';$('#exVerify').textContent=''}
+function clearOut(){OUT.forEach(o=>{try{URL.revokeObjectURL(o.url)}catch(e){}});OUT=[];$('#exBarAct').classList.add('hidden');$('#exDone').classList.add('hidden');$('#exDoneList').innerHTML='';$('#exVerify').textContent=''}
 function openExport(){closeM();exInfo();exNote();openM('m-export')}
 function exInfo(){const [w,h]=dims();$('#exInfo').textContent=`${w}x${h} • ${S.fps} fps • ${S.dur} detik • ${Math.round(S.dur*S.fps)} frame • background: ${BGS[S.bg][0]}`}
 function exNote(){
@@ -1146,33 +1158,51 @@ $('#btnExportM').onclick=openExport;
 $('#exCancel').onclick=()=>{cancelFlag=true};
 document.addEventListener('visibilitychange',()=>{if(recording&&document.hidden)log('Layar/tab tersembunyi saat export. Biarkan layar menyala dan tetap di halaman ini.','warn')});
 
-function saveOut(o){const a=document.createElement('a');a.href=o.url;a.download=o.name;a.style.display='none';document.body.appendChild(a);a.click();setTimeout(()=>a.remove(),1000)}
+let saveLock=0;
+function actMsg(t,cls){const m=$('#exActMsg');m.className='text-[10px] min-h-[1.5rem] '+(cls||'text-gray-400');m.textContent=t}
+function saveOut(o){
+  if(Date.now()-saveLock<2500){toast('Unduhan sedang berjalan, tunggu sebentar');return}
+  saveLock=Date.now();
+  const a=document.createElement('a');a.href=o.url;a.download=o.name;a.style.display='none';document.body.appendChild(a);a.click();setTimeout(()=>a.remove(),1000);
+  toast('Mengunduh '+o.name);
+  actMsg('✓ Unduhan dimulai. Cek notifikasi Chrome atau folder Download. Di Galeri, buka album "Download" (muncul dalam beberapa detik).','text-emerald-400');
+  log('Simpan: '+o.name,'ok');
+}
 async function shareOut(o){
   try{
     const f=new File([o.blob],o.name,{type:o.blob.type});
-    if(navigator.canShare&&navigator.canShare({files:[f]}))await navigator.share({files:[f],title:o.name});
-    else toast('Browser ini tidak mendukung Bagikan file. Pakai tombol Simpan.');
-  }catch(e){if(e&&e.name!=='AbortError'){toast('Bagikan gagal: '+e.message);log('Share gagal: '+e.message,'warn')}}
+    if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:o.name});actMsg('✓ Menu bagikan dibuka. Pilih Galeri / Foto / Files.','text-emerald-400')}
+    else{toast('Browser ini tidak mendukung Bagikan file. Pakai tombol Simpan.');actMsg('Bagikan tidak didukung di browser ini. Pakai tombol Simpan.','text-amber-400')}
+  }catch(e){if(e&&e.name!=='AbortError'){toast('Bagikan gagal: '+e.message);actMsg('Bagikan gagal: '+e.message+'. Pakai tombol Simpan.','text-amber-400');log('Share gagal: '+e.message,'warn')}}
 }
 function showOut(items,info){
   clearOut();
   OUT=items.map(o=>({...o,url:URL.createObjectURL(o.blob)}));
   $('#exDoneInfo').textContent=info;
-  const box=$('#exDoneList');
+  const box=$('#exDoneList'),single=OUT.length===1;
   OUT.forEach((o,i)=>{
     const row=document.createElement('div');
     row.className='bg-[#12151a] border border-gray-800 rounded-lg p-2 space-y-2';
-    row.innerHTML=(i===0&&o.blob.type.startsWith('video/')?'<video class="w-full rounded-lg bg-black checker" controls muted loop playsinline></video>':'')
-      +'<div class="flex justify-between gap-2"><span class="truncate text-gray-200"></span><span class="text-gray-500 shrink-0"></span></div>'
-      +'<div class="flex gap-2"><button class="flex-1 py-2.5 bg-emerald-500 text-black font-bold rounded-lg" data-act="save">Simpan</button><button class="flex-1 py-2.5 bg-[#1d2330] border border-gray-700 rounded-lg" data-act="share">Bagikan / Galeri</button></div>';
-    const sp=row.querySelectorAll('span');sp[0].textContent=o.name;sp[1].textContent=(o.blob.size/1e6).toFixed(1)+' MB';
+    row.innerHTML=(i===0&&o.blob.type.startsWith('video/')?'<div class="w-full aspect-video rounded-lg overflow-hidden bg-black checker"><video class="w-full h-full object-contain" controls muted loop playsinline></video></div>':'')
+      +(single?'':'<div class="flex justify-between gap-2"><span class="truncate text-gray-200"></span><span class="text-gray-500 shrink-0"></span></div>'
+      +'<div class="flex gap-2"><button class="flex-1 py-3 bg-emerald-500 text-black font-bold rounded-lg" data-act="save">Simpan</button><button class="flex-1 py-3 bg-[#1d2330] border border-gray-700 rounded-lg" data-act="share">Bagikan / Galeri</button></div>');
     const v=row.querySelector('video');if(v)v.src=o.url;
-    row.querySelector('[data-act=save]').onclick=()=>saveOut(o);
-    row.querySelector('[data-act=share]').onclick=()=>shareOut(o);
+    if(!single){
+      const sp=row.querySelectorAll('span');sp[0].textContent=o.name;sp[1].textContent=(o.blob.size/1e6).toFixed(1)+' MB';
+      row.querySelector('[data-act=save]').onclick=()=>saveOut(o);
+      row.querySelector('[data-act=share]').onclick=()=>shareOut(o);
+    }
     box.appendChild(row);
   });
   $('#exDone').classList.remove('hidden');
-  try{$('#exDone').scrollIntoView({behavior:'smooth',block:'nearest'})}catch(e){}
+  if(single){
+    const o=OUT[0];
+    $('#exActName').textContent=o.name;$('#exActSize').textContent=(o.blob.size/1e6).toFixed(1)+' MB';
+    $('#exActSave').onclick=()=>saveOut(o);$('#exActShare').onclick=()=>shareOut(o);
+    saveLock=0;
+    actMsg(isTouch?'Tekan Simpan untuk mengunduh, atau Bagikan lalu pilih Galeri / Foto.':'File sudah diunduh otomatis. Tombol ini untuk mengunduh ulang.');
+    $('#exBarAct').classList.remove('hidden');
+  }
 }
 async function verifyVideo(blob,refs){
   const v=document.createElement('video');
@@ -1422,6 +1452,7 @@ function restore(j){
 }
 const HS={u:[],r:[],cur:''};
 function commit(){
+  if(typeof resetting!=='undefined'&&resetting)return;
   const s=snapshot();if(s===HS.cur)return;
   HS.u.push(HS.cur);if(HS.u.length>60)HS.u.shift();HS.cur=s;HS.r=[];
   try{localStorage.setItem('motionstudio.v2',s)}catch(e){}
@@ -1441,7 +1472,14 @@ $('#pjOpen').onchange=e=>{
   }catch(err){toast('File proyek tidak valid');log('Buka proyek gagal: '+err.message,'err')}};
   r.readAsText(f);e.target.value='';
 };
-$('#pjReset').onclick=()=>{if(confirm('Hapus semua pengaturan tersimpan dan mulai ulang?')){try{localStorage.removeItem('motionstudio.v2')}catch(e){}location.reload()}};
+let resetting=false,rstT=0;
+$('#pjReset').onclick=()=>{
+  const b=$('#pjReset');
+  if(!rstT){toast('Ketuk tombol sampah SEKALI LAGI untuk reset semua');b.style.background='#7f1d1d';rstT=setTimeout(()=>{rstT=0;b.style.background=''},3500);return}
+  clearTimeout(rstT);rstT=0;resetting=true;
+  try{localStorage.removeItem('motionstudio.v2')}catch(e){}
+  toast('Direset, memuat ulang...');setTimeout(()=>location.reload(),350);
+};
 
 /* ================= HOTKEY ================= */
 document.addEventListener('keydown',e=>{
